@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://dcs1.geneat.vn:8911",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

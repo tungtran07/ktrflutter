@@ -1,0 +1,72 @@
+<app-geneat-modal-form
+  [visible]="isVisibleEdit"
+  [title]="data ? ('routes.Admin.Order.edit' | translate) + ' ' + data?.name : ('routes.Admin.Order.addNew' | translate)"
+  (clickOk)="handleOk($event)"
+  (clickCancel)="handleCancel()"
+  [columns]="listOfColumns"
+  [values]="data"
+  [loading]="isLoading"
+  [col]="2"
+  [extendModal]="extendModal"
+  [widthLabel]="120"
+>
+  <ng-template #extendModal>
+    <div nz-row>
+      <div nz-col nzFlex="auto">
+        <nz-spin [nzSpinning]="isLoading">
+          <nz-upload
+            class="avatar-uploader"
+            nzAction="" [nzCustomRequest]="customReq"
+            nzName="avatar"
+            nzListType="picture-card"
+            [nzShowUploadList]="false"
+          >
+            <ng-container *ngIf="!imageUrl">
+              <div class="ant-upload-text">Upload</div>
+            </ng-container>
+            <img *ngIf="imageUrl" [src]="imageUrl" style="width: 100%" />
+          </nz-upload>
+          <div class="clipboard-region" tabindex="0" (paste)="onPaste($event)">
+            {{ 'Click và nhấn Ctrl + V để paste ảnh.' | translate }}
+          </div>
+        </nz-spin>
+      </div>
+      <div nz-col nzFlex="auto">
+        <div class="gn-text-right">
+          <button *ngIf="storageLinkedItemId && linkProduct" nz-button nzType="primary" (click)="handleShowLinkProduct(storageLinkedItemId)">Chỉnh sửa sản phẩm liên kết</button>
+        </div>
+        <ng-container *ngIf="(data && !data?.storageLinkedItemId) || !storageLinkedItemId">
+          <h3>{{ langPrefix + '.size' | translate }}</h3>
+          <div class="gn-text-center">
+            <nz-space [nzSize]="25">
+              <ng-template ngFor let-item [ngForOf]="listSizes" let-index="index">
+                <nz-badge *nzSpaceItem [nzCount]="item.quantity" [nzOverflowCount]="999999999">
+                  <button nz-popover nz-button [nzType]="item.quantity > 0 && 'primary'" nzPopoverTitle="Size {{item.size}}" [nzPopoverContent]="contentTemplate">{{item.size}}</button>
+                  <ng-template #contentTemplate>
+                    <nz-input-number [(ngModel)]="item.quantity" [nzStep]="1"></nz-input-number>
+                  </ng-template>
+                </nz-badge>
+              </ng-template>
+            </nz-space>
+          </div>
+
+          <div class="gn-text-center gn-mt-10">
+            <button nz-button nz-popover nzPopoverTitle="Thêm Size" [nzPopoverContent]="addTemplate">
+              <i class="las la-plus la-lg"></i>
+            </button>
+            <ng-template #addTemplate>
+              <div style="width: 177px">
+                <input type="text" nz-input class="gn-mb-10" [(ngModel)]="newSizes.size" />
+                <nz-input-number class="gn-mb-10" [(ngModel)]="newSizes.quantity" [nzStep]="1"></nz-input-number>
+                <button nz-button nzBlock nzType="primary" [disabled]="!newSizes.size" (click)="handleAddSize()">
+                  Tạo mới size
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </ng-container>
+
+      </div>
+    </div>
+  </ng-template>
+</app-geneat-modal-form>

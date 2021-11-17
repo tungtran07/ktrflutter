@@ -1,0 +1,9 @@
+@import "src/app/app.variables";
+
+.g-main{
+  height: 100vh;
+}
+.drawer_slide_bar .ant-drawer-body {
+  padding: 0;
+  background-color: $light;
+}

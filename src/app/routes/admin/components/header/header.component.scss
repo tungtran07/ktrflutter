@@ -1,0 +1,291 @@
+@import "src/app/app.variables";
+
+.ant-layout{
+  background: #f8f8f8;
+  &-footer {
+    background: #f8f8f8;
+    padding: 0px;
+  }
+  &-content {
+    padding: 12px 12px 0;
+    margin: 12px 12px 0;
+    position: relative;
+    min-height: auto;
+    overflow: auto;
+    background-color: #fff;
+  }
+  &-sider{
+    background: $white;
+
+    &-collapsed {
+      .ant-menu-item-group-title,
+      .las + span {
+        opacity: 0;
+        max-width: 0;
+        display: inline-block;
+      }
+    }
+  }
+  &-header {
+    padding: 0;
+    background: $white;
+    -webkit-box-shadow: 0 1px 4px rgba($dark_select, .08);
+    box-shadow: 0 1px 4px rgba($dark_select, .08);
+    position: relative;
+
+    .trigger {
+      font-size: 20px;
+      line-height: 64px;
+      padding: 0 24px;
+      cursor: pointer;
+      -webkit-transition: color .3s;
+      transition: color .3s;
+
+      &:hover {
+        background: rgba($black, .025);
+      }
+    }
+
+    .user-section {
+      float: right;
+
+      .header-action {
+        display: inline-block;
+        padding: 0 12px;
+        font-size: 13px;
+        margin-left: 10px;
+        color: $dark59;
+        position: relative;
+
+        i.las {
+          color: $blue;
+          font-size: 24px;
+          vertical-align: middle;
+        }
+
+        .ant-avatar-square {
+          border-radius: 5px;
+          margin-left: 10px;
+        }
+
+        .ringing {
+          display: block;
+          border-radius: 40px;
+          height: 40px;
+          width: 40px;
+          position: absolute;
+          animation: animation-pulse 3.5s ease-out;
+          animation-iteration-count: infinite;
+          opacity: 0;
+          border-width: 3px;
+          border-style: solid;
+          border-color: $blue;
+          top: 12px;
+          left: 4px;
+        }
+        @keyframes animation-pulse {
+          0% {
+            -webkit-transform: scale(0.1, 0.1);
+            opacity: 0.0;
+          }
+          60% {
+            -webkit-transform: scale(0.1, 0.1);
+            opacity: 0.0;
+          }
+          65% {
+            opacity: 1;
+          }
+          100% {
+            -webkit-transform: scale(1.2, 1.2);
+            opacity: 0.0;
+          }
+        }
+
+        &:hover {
+          background: rgba($black, .025);
+          cursor: pointer;
+        }
+
+        .txt-username {
+          margin-left: 10px;
+        }
+      }
+    }
+    #header_title {
+      margin-bottom: 0;
+      font-size: 16px;
+      color: tint($dark, 10);
+      line-height: 1.9;
+      padding: 0 15px 0 10px;
+      border-right: solid 1px tint($dark, 90);
+      margin-right: 15px;
+      display: inline-block;
+    }
+
+    .ant-select-selector {
+      height: 30px;
+      .ant-select-selection-search-input { height: 30px; }
+      .ant-select-selection-item { line-height: 28px; }
+    }
+  }
+}
+.ant-popover.ant-popover-placement-bottomRight {
+  width: 370px;
+
+  &.p-0 {
+    .ant-popover-arrow { border-color: $blue-dark; }
+    .ant-popover-inner-content { padding: 0; }
+  }
+
+  .ant-popover-inner {
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .title-bg {
+    background-image: url('../../../../../assets/images/bg-1.jpg');
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 3px solid rgba($white, 0.7);
+    background-position: bottom;
+
+    h2 {
+      color: $white;
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 0;
+      + .green { margin-left: 10px; }
+    }
+
+    + .ant-tabs {
+      margin-top: -44px;
+
+      .ant-tabs-nav{
+        margin: 0;
+
+        &::before { display: none; }
+
+        .ant-tabs-ink-bar { height: 3px; }
+
+        .ant-tabs-tab{
+          &.ant-tabs-tab-active .ant-tabs-tab-btn { color: $white; }
+
+          .ant-tabs-tab-btn {
+            color: rgba($white, 0.7);
+            font-size: 13px;
+          }
+        }
+      }
+    }
+  }
+}
+.ant-list {
+  &.bg-color {
+    .ant-list-item {
+      background-color: $light;
+      border-bottom: none;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      &-meta-avatar .las { background-color: transparent; }
+      &.success {
+        background-color: $light-success;
+        .ant-list-item-action > li, .ant-list-item-meta-avatar .las { color: $success; }
+      }
+      &.danger {
+        background-color: $light-danger;
+        .ant-list-item-action > li, .ant-list-item-meta-avatar .las { color: $danger; }
+      }
+      &.info {
+        background-color: $light-info;
+        .ant-list-item-action > li, .ant-list-item-meta-avatar .las { color: $info; }
+      }
+      &.warning {
+        background-color: $light-warning;
+        .ant-list-item-action > li, .ant-list-item-meta-avatar .las { color: $warning; }
+      }
+    }
+  }
+  .ant-list-item {
+    padding: 12px;
+    border-bottom: 1px solid $light;
+
+    &.success {
+      .ant-list-item-meta-avatar .las { color: $success; }
+    }
+    &.danger {
+      .ant-list-item-meta-avatar .las { color: $danger; }
+    }
+    &.info {
+      .ant-list-item-meta-avatar .las { color: $info; }
+    }
+    &.warning {
+      .ant-list-item-meta-avatar .las { color: $warning; }
+    }
+
+    &:hover {
+      background-color: $light;
+      .ant-list-item-meta-title {
+        color: $blue;
+      }
+    }
+
+    &-meta{
+      align-items: center;
+
+      &-avatar .las{
+        width: 32px;
+        height: 32px;
+        text-align: center;
+        line-height: 1.8;
+        background-color: $light;
+        border-radius: 5px;
+        color: $blue;
+      }
+      &-title {
+        margin-bottom: 0;
+        line-height: 1.3;
+        color: $dark;
+      }
+      &-description {
+        font-size: 13px;
+      }
+    }
+    &-action {
+      margin-left: 0;
+    }
+  }
+}
+.ant-skeleton {
+  padding: 10px;
+
+  &-header,
+  &-content {
+    vertical-align: middle;
+
+    ul { display: initial; }
+  }
+}
+.profile {
+  color: $muted;
+  font-size: 13px;
+  line-height: 2;
+
+  strong {
+    font-size: 16px;
+    color: $dark75;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .ant-btn {
+    margin-top: 2px;
+  }
+}
+.cart_header {
+  .ant-popover-inner-content {padding: 0;}
+  .ant-list-items {
+    max-height: 40vh;
+    overflow: auto;
+  }
+}

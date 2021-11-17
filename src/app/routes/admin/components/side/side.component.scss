@@ -1,0 +1,26 @@
+@import "src/app/app.variables";
+
+.logo {
+  position: relative;
+  height: 64px;
+  padding-left: 24px;
+  overflow: hidden;
+  line-height: 64px;
+  background: #F6BA02;
+  -webkit-transition: all .3s;
+  transition: all .3s;
+
+  img {
+    height: 45px;
+    margin-left: -9px;
+  }
+
+  h1 {
+    display: inline;
+    color: $white;
+    font-size: 20px;
+    margin: 0 0 0 20px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+}

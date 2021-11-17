@@ -1,0 +1,18 @@
+<div class="gn-text-center gn-mb-50">
+  <nz-avatar [nzSize]="150" nzIcon="user" nzSrc="assets/images/logo1.png"></nz-avatar>
+  <h3>{{ langPrefix + '.title' | translate }}</h3>
+  <p><strong>{{ langPrefix + '.subTitle' | translate }}</strong></p>
+</div>
+
+<app-geneat-form
+  [columns]="columns"
+  [loading]="isLoading"
+  (handSubmit)="submitForm($event)"
+  [widthLabel]="140"
+  textSubmit="{{langPrefix + '.title' | translate}}"
+></app-geneat-form>
+
+<div class="gn-text-center gn-mt-30">
+  <button nz-button nzType="link" [routerLink]="['/auth/login']">Đăng nhập</button>
+</div>
+

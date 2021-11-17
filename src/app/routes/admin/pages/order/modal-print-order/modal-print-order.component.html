@@ -1,0 +1,116 @@
+<app-geneat-modal
+  [visible]="isVisiblePrint"
+  [title]="('routes.Admin.Order.print' | translate) + ' (' + listOrder?.length + ')'"
+  (clickOk)="handlePrintAction()"
+  (clickCancel)="handleCancelPrint()"
+  [contentModal]="contentModal"
+  [width]="800"
+  [okText]="'routes.Admin.Order.print' | translate"
+>
+  <ng-template #contentModal>
+    <div id="printOrder">
+      <div *ngFor="let orderInfo of listOrderPrint;">
+        <table>
+          <thead>
+          <tr style="padding-bottom: 2px;">
+            <td colspan="2">Gửi từ: <span><strong>{{orderInfo.createdByUser}} Sneaker</strong>, ĐT:&nbsp;<strong>{{orderInfo.createdByUserPhone}}</strong></span></td>
+          </tr>
+          <tr *ngIf="orderInfo.invoiceShipping?.shipperCompanyName != 'VIETTELPOST'">
+            <th class="text_center"><img [src]="orderInfo.barCode1" /></th>
+            <th class="text_center" width="140">
+              <p class="shipperCompanyName">
+                <span *ngIf="orderInfo.invoiceShipping?.shipperCompanyName == 'VIETTELPOST'; else codeShip">KHL-HBHNDA1503</span>
+                <ng-template #codeShip>136085-KHL-<br/>Đông Anh</ng-template>
+              </p>
+              {{ orderInfo.orderNo }}
+            </th>
+          </tr>
+          <tr *ngIf="orderInfo.invoiceShipping?.shipperCompanyName != 'VIETTELPOST'">
+            <th class="text_center" style="vertical-align: bottom;">
+              <img *ngIf="orderInfo.type !== 'SHPE'" class="width_auto" [src]="orderInfo.barCode2" />
+              <h3 *ngIf="orderInfo.type === 'SHPE'">Đơn Shopee</h3>
+              <p *ngIf="orderInfo.type === 'SHPE'">{{orderInfo.shippingCarrier}}</p>
+            </th>
+            <th class="info">
+              <p>Trl: {{ orderInfo.totalWeight }}g</p>
+              <span>
+                  Tiền phải thu<br/>
+                  <span [innerHTML]="formatCurrency((orderInfo.type === 'SHPE' || orderInfo.type === 'PREP') ? 0 : orderInfo.total)"></span>
+                </span>
+            </th>
+          </tr>
+          <tr *ngIf="orderInfo.invoiceShipping?.shipperCompanyName == 'VIETTELPOST'">
+            <th class="info">
+                <span>
+                  Tiền phải thu: <span [innerHTML]="formatCurrency((orderInfo.type === 'SHPE' || orderInfo.type === 'PREP') ? 0 : orderInfo.total)"></span>
+                </span>
+            </th>
+            <th class="info">
+              <p>Trlg: {{ orderInfo.totalWeight }}g</p>
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <th align="left" colspan="2">
+              <p class="mb_5">
+                <span class="mr_18">Nhận: <span class="gn-font-14">{{ orderInfo.customerName }}</span></span>
+                ĐT: <span class="gn-font-17">{{ orderInfo.customerPhone }}</span>
+              </p>
+            </th>
+          </tr>
+          <tr>
+            <td colspan="2">Địa chỉ: <strong class="gn-font-13 line_height_14">{{ orderInfo.customerAddress }}</strong></td>
+          </tr>
+          <tr>
+            <td colspan="2">Ghi chú: <strong *ngIf="orderInfo.type === 'PREP'" class="gn-font-13 line_height_14">(Đã chuyển khoản)  </strong><strong class="gn-font-13 line_height_14">{{ orderInfo.customerNote }}</strong></td>
+          </tr>
+          <tr *ngIf="orderInfo.invoiceShipping?.shipperCompanyName == 'VIETTELPOST'">
+            <th class="text_center"><img [src]="orderInfo.barCode1" /></th>
+            <th class="text_center" width="140">
+              <p class="shipperCompanyName">
+                <span *ngIf="orderInfo.invoiceShipping?.shipperCompanyName == 'VIETTELPOST'; else codeShip">KHL-HBHNDA1503</span>
+                <ng-template #codeShip>136085-KHL-<br />Đông Anh</ng-template>
+              </p>
+              {{ orderInfo.orderNo }}
+            </th>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <table border>
+                <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Sản phẩm</th>
+                  <th>Size</th>
+                  <th>SL</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let unit of orderInfo.invoiceItems; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <th class="text_left">{{ unit.name }}</th>
+                  <th>{{ unit.size }}</th>
+                  <th>{{ unit.quantity }}</th>
+                </tr>
+                </tbody>
+
+              </table>
+            </td>
+          </tr>
+
+          <tr>
+            <td colspan="2">
+              - Liên hệ ĐT với khách hàng tối thiểu 02 lần trước khi đi phát (khoảng cách không quá 24h). <br />
+              - Cho khách xem hàng, không cho thử.
+            </td>
+          </tr>
+          </tbody>
+
+        </table>
+        <hr>
+      </div>
+    </div>
+
+  </ng-template>
+</app-geneat-modal>

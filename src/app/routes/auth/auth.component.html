@@ -1,0 +1,12 @@
+<div class="layout-auth">
+  <div class="container">
+    <router-outlet></router-outlet>
+    <div class="-intro-x gn-text-center gn-mt-30">
+      <nz-select style="width: 100px" ngModel="{{translate.getDefaultLang()}}" (ngModelChange)="changeLanguage($event)">
+        <nz-option nzValue="vi" nzLabel="Vietnam"></nz-option>
+        <nz-option nzValue="en" nzLabel="English"></nz-option>
+        <nz-option nzValue="ja" nzLabel="Japan"></nz-option>
+      </nz-select>
+    </div>
+  </div>
+</div>

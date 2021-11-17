@@ -1,0 +1,372 @@
+<div nz-row [nzGutter]="[10, 10]">
+    <div nz-col nzSpan="24" [nzLg]="8" [nzXl]="8" [nzXXl]="8">
+        <div nz-row [nzGutter]="[10, 10]">
+            <div nz-col nzSpan="24">
+                <nz-card nzTitle="Chuyên mục" [nzBodyStyle]="{height: 'calc(100vh - 235px)', padding: '0'}" [nzLoading]="isLoading" [nzExtra]="categoriesTemplate">
+                    <cdk-virtual-scroll-viewport itemSize="1" class="demo-infinite-container">
+                        <nz-list>
+                            <nz-list-item
+                                    *cdkVirtualFor="let item of categories; let i = index"
+                                    [class.list-item-selected]="selectedCategory?.id === item.id"
+                                    (click)="onSelectCategory(item)">
+                                <nz-list-item-meta *ngIf="item">
+                                    <nz-list-item-meta-title>
+                                        <div style="cursor: pointer" class="font-normal">{{(i + 1) + '. ' + item.title}}</div>
+                                    </nz-list-item-meta-title>
+                                </nz-list-item-meta>
+                                <ul nz-list-item-actions>
+                                    <nz-list-item-action>
+                                        <a nz-tooltip nzTooltipTitle="Sửa" (click)="onEditCategory(item); $event.stopPropagation();">
+                                            <i nz-icon nzType="edit" nzTheme="outline"></i>
+                                        </a>
+                                    </nz-list-item-action>
+                                </ul>
+                            </nz-list-item>
+                        </nz-list>
+                    </cdk-virtual-scroll-viewport>
+                </nz-card>
+            </div>
+            <div nz-col nzSpan="24" class="gn-mb-5">
+                <div style="display: flex; justify-content: end">
+                    <nz-pagination
+                            nzShowSizeChanger
+                            [(nzPageIndex)]="categoryPagination.currentPage"
+                            [nzPageSize]="categoryPagination.pageSize"
+                            [nzTotal]="categoryPagination.total"
+                            [nzPageSizeOptions]="pageSizeOptions"
+                            [nzSize]="'small'"
+                            [nzShowTotal]="rangeTemplate"
+                            (nzPageIndexChange)="onPageChanged('category', {pageSize: categoryPagination.pageSize, pageIndex: $event})"
+                            (nzPageSizeChange)="onPageChanged('category', {pageSize: $event, pageIndex: 1})"
+                    ></nz-pagination>
+                </div>
+            </div>
+        </div>
+        <ng-template #rangeTemplate let-range="range" let-total> {{ range[0] }}-{{ range[1] }} {{'components.Datatable.of' | translate}} {{ total }} {{'components.Datatable.items' | translate}} </ng-template>
+        <ng-template #categoriesTemplate>
+            <button nz-button (click)="onAddCategory()">Thêm mới</button>
+        </ng-template>
+    </div>
+    <div nz-col nzSpan="24" [nzLg]="16" [nzXl]="16" [nzXXl]="16">
+        <div nz-row [nzGutter]="[10, 10]">
+            <div nz-col nzSpan="24">
+                <nz-card [nzTitle]="!selectedCategory ? 'Tất cả bài viết' : ('Bài viết trong ' + selectedCategory.title)" [nzBodyStyle]="{height: 'calc(100vh - 235px)', padding: '0'}" [nzLoading]="isLoading || isLoadPost" [nzExtra]="postTemplate">
+                    <cdk-virtual-scroll-viewport itemSize="1" class="demo-infinite-container">
+                        <nz-list>
+                            <nz-list-item
+                                    *cdkVirtualFor="let item of posts; let i = index">
+                                <nz-list-item-meta *ngIf="item"
+                                                   [nzAvatar]="item.thumbnail">
+                                    <nz-list-item-meta-title>
+                                        <div style="cursor: pointer" [class]="item.publishStatus === 'PUBLISHED' ? 'gn-text-bold' : 'gn-text-normal'">
+                                            {{item.title}}
+                                            <small *ngIf="item.publishStatus === 'PUBLISHED'" class="status-published gn-mr-10">
+                                                Đã đăng
+                                            </small>
+                                            <small *ngIf="item.publishStatus !== 'PUBLISHED'" class="status-draft gn-mr-10">
+                                                Bài nháp
+                                            </small>
+                                        </div>
+                                    </nz-list-item-meta-title>
+                                    <nz-list-item-meta-description>
+                                        <span>{{formatDate(item.createdOnDate) + '. ' + item.category?.title | uppercase}}</span>
+                                    </nz-list-item-meta-description>
+                                </nz-list-item-meta>
+                                <ul nz-list-item-actions>
+                                    <nz-list-item-action>
+                                        <a nz-tooltip nzTooltipTitle="Sửa" (click)="onEditPost(item); $event.stopPropagation();">
+                                            <i nz-icon nzType="edit" nzTheme="outline"></i>
+                                        </a>
+                                    </nz-list-item-action>
+                                    <nz-list-item-action>
+                                        <a (click)="onChangePostStatus(item); $event.stopPropagation();">
+                                            <i class="gn-color-red" nz-tooltip nzTooltipTitle="Gỡ bài viết" *ngIf="item.publishStatus === 'PUBLISHED'" nz-icon nzType="eye-invisible" nzTheme="outline"></i>
+                                            <i nz-tooltip nzTooltipTitle="Đăng bài viết" *ngIf="item.publishStatus !== 'PUBLISHED'" nz-icon nzType="eye" nzTheme="outline"></i>
+                                        </a>
+                                    </nz-list-item-action>
+                                </ul>
+                            </nz-list-item>
+                        </nz-list>
+                    </cdk-virtual-scroll-viewport>
+                </nz-card>
+            </div>
+            <div nz-col nzSpan="24" class="gn-mb-5">
+                <div style="display: flex; justify-content: end">
+                    <nz-pagination
+                            nzShowSizeChanger
+                            [(nzPageIndex)]="postPagination.currentPage"
+                            [nzPageSize]="postPagination.pageSize"
+                            [nzTotal]="postPagination.total"
+                            [nzPageSizeOptions]="pageSizeOptions"
+                            [nzSize]="'small'"
+                            [nzShowTotal]="rangeTemplate"
+                            (nzPageIndexChange)="onPageChanged('post', {pageSize: postPagination.pageSize, pageIndex: $event})"
+                            (nzPageSizeChange)="onPageChanged('post', {pageSize: $event, pageIndex: 1})"
+                    ></nz-pagination>
+                </div>
+            </div>
+        </div>
+        <ng-template #postTemplate>
+            <nz-input-group [nzSuffix]="suffixIconSearch" [nzAddOnAfter]="addOnAfterTemplate">
+                <input
+                        type="text"
+                        [formControl]="fullTextSearch"
+                        nz-input
+                        placeholder="{{'components.Datatable.pleaseEnterValueToSearch' | translate}}"
+                />
+            </nz-input-group>
+            <ng-template #suffixIconSearch>
+                <i class="las la-search la-lg"></i>
+            </ng-template>
+            <ng-template #addOnAfterTemplate>
+                <a (click)="onAddPost()">{{ 'Thêm mới' | translate }}</a>
+            </ng-template>
+        </ng-template>
+    </div>
+</div>
+
+<app-geneat-modal-form
+        [visible]="isVisibleCategoryModal"
+        [title]="(categoryValues ? 'Cập nhật chuyên mục' : 'Thêm mới chuyên mục') | translate"
+        [values]="categoryValues"
+        (clickOk)="onSavePostCategory($event)"
+        (clickCancel)="onClosePostCategoryModal()"
+        [columns]="categoryColumn"
+        [col]="1"
+        [widthLabel]="130"
+        [width]="800"
+        [okText]="'Lưu lại'"
+        [extendModalLeft]="extendModalLeft"
+        [widthModalLeft]="230"
+>
+    <ng-template #extendModalLeft>
+        <nz-spin [nzSpinning]="isLoading">
+            <nz-upload
+                    class="avatar-uploader"
+                    nzAction="" [nzCustomRequest]="customReq"
+                    nzName="avatar"
+                    nzListType="picture-card"
+                    [nzShowUploadList]="false"
+            >
+                <ng-container *ngIf="!imageUrl">
+                    <div class="ant-upload-text">Ảnh cover</div>
+                </ng-container>
+                <img *ngIf="imageUrl" [src]="imageUrl" style="width: 100%" />
+            </nz-upload>
+        </nz-spin>
+    </ng-template>
+</app-geneat-modal-form>
+
+<app-geneat-modal
+        classModal="ant-modal-not-padding"
+        [visible]="isVisiblePostModal"
+        [title]="postValues ? 'Cập nhật bài viết' : 'Thêm mới bài viết'"
+        (clickOk)="onSavePost()"
+        (clickCancel)="onClosePost()"
+        [notFooter]="selectedTab !== 0"
+        [width]="800"
+        [contentModal]="contentModalDetail"
+>
+    <ng-template #contentModalDetail>
+        <nz-tabset [(nzSelectedIndex)]="selectedTab">
+            <nz-tab nzTitle="Viết bài">
+                <div class="gn-pt-10 gn-pl-15 gn-pr-15 gn-pb-10">
+                    <form nz-form [formGroup]="postForm">
+                        <div nz-row [nzGutter]="[12, 12]">
+                            <div nz-col [nzXs]="24" [nzSm]="7">
+                                <nz-spin [nzSpinning]="isLoading">
+                                    <nz-upload
+                                            class="avatar-uploader"
+                                            nzAction="" [nzCustomRequest]="customReq"
+                                            nzName="avatar"
+                                            nzListType="picture-card"
+                                            [nzShowUploadList]="false"
+                                    >
+                                        <ng-container *ngIf="!imageUrl">
+                                            <div class="ant-upload-text">Ảnh thumbnail</div>
+                                        </ng-container>
+                                        <img *ngIf="imageUrl" [src]="imageUrl" style="width: 100%" />
+                                    </nz-upload>
+                                </nz-spin>
+                            </div>
+                            <div nz-col [nzXs]="24" [nzSm]="17">
+                                <div nz-row [nzGutter]="[12, 12]">
+                                    <div nz-col nzSpan="24">
+                                        <nz-form-item>
+                                            <nz-form-label nzFor="title" nzRequired>Tiêu đề</nz-form-label>
+                                            <nz-form-control [nzErrorTip]="errorTmpl">
+                                                <input nz-input
+                                                       formControlName="title"
+                                                       [attr.id]="'title'"/>
+                                            </nz-form-control>
+                                        </nz-form-item>
+                                    </div>
+                                </div>
+                                <div nz-row [nzGutter]="[12, 12]">
+                                    <div nz-col nzSpan="24">
+                                        <nz-form-item>
+                                            <nz-form-label nzFor="categoryId" nzRequired>Chuyên mục</nz-form-label>
+                                            <nz-form-control [nzErrorTip]="errorTmpl">
+                                                <nz-select
+                                                        formControlName="categoryId"
+                                                        nzShowSearch
+                                                        [attr.id]="'categoryId'"
+                                                >
+                                                    <nz-option *ngFor="let item of categories" [nzValue]="item.id" nzLabel="{{item.title}}">
+                                                    </nz-option>
+                                                </nz-select>
+                                            </nz-form-control>
+                                        </nz-form-item>
+                                    </div>
+                                </div>
+                                <div nz-row [nzGutter]="[12, 12]">
+                                    <div nz-col nzSpan="24">
+                                        <nz-form-item>
+                                            <nz-form-label nzFor="summary">Giới thiệu</nz-form-label>
+                                            <nz-form-control [nzErrorTip]="errorTmpl">
+                                                <textarea
+                                                        formControlName="summary"
+                                                        nz-input
+                                                        rows="4"
+                                                        [attr.id]="'summary'"
+                                                ></textarea>
+                                            </nz-form-control>
+                                        </nz-form-item>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div nz-row [nzGutter]="[12, 12]">
+                            <div nz-col nzSpan="24">
+                                <nz-form-item>
+                                    <nz-form-label nzFor="content">Nội dung</nz-form-label>
+                                    <nz-form-control [nzErrorTip]="errorTmpl">
+                                                <textarea
+                                                        formControlName="content"
+                                                        nz-input
+                                                        [attr.id]="'content'"
+                                                        [nzAutosize]="{ minRows: 15, maxRows: 15 }"
+                                                ></textarea>
+                                    </nz-form-control>
+                                </nz-form-item>
+                            </div>
+                        </div>
+                        <div nz-row [nzGutter]="[12, 12]" *ngIf="postValues">
+                            <div nz-col nzSpan="24">
+                                <nz-form-item>
+                                    <nz-form-label nzFor="content">Menu Link</nz-form-label>
+                                    <nz-form-control [nzErrorTip]="errorTmpl">
+                                        <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+                                            <input type="text" disabled nz-input [value]="postUrl"/>
+                                        </nz-input-group>
+                                        <ng-template #suffixIconButton>
+                                            <button nz-button style="border-radius: 0 !important;" nzType="primary" [copy-clipboard]="postUrl">
+                                                <i nz-icon nzType="copy" nzTheme="outline"></i>
+                                            </button>
+                                        </ng-template>
+                                    </nz-form-control>
+                                </nz-form-item>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </nz-tab>
+            <nz-tab *ngIf="postValues" nzTitle="Attachments">
+                <div class="gn-pt-10 gn-pl-15 gn-pr-15 gn-pb-10">
+                    <div class="attachments">
+                        <nz-upload
+                                nzListType="picture"
+                                (nzChange)="handleUpload($event)"
+                                [nzAction]="urlUpload"
+                                [(nzFileList)]="listUpload"
+                                [nzFileListRender]="uploadList"
+                        >
+                            <button nz-button>
+                                <i nz-icon nzType="upload"></i>
+                                {{this.infoUpload?.docTypeName}}
+                            </button>
+                        </nz-upload>
+                        <app-geneat-modal [keyboard]="true" [visible]="previewVisible" [contentModal]="modalContent" [notFooter]="true" (clickCancel)="previewVisible = false">
+                            <ng-template #modalContent>
+                                <img [src]="previewImage" [ngStyle]="{ width: '100%' }" />
+                            </ng-template>
+                        </app-geneat-modal>
+                        <ng-template #uploadList let-files>
+                            <div class="upload-list">
+                                <div *ngFor="let file of files">
+                                    <div class="upload-item" (click)="handlePreview(file)">
+                                        <div class="upload-box">
+                                            <a class="upload-thumnail">
+                                                <img [src]="file.url">
+                                            </a>
+                                            <a class="upload-name">
+                                                {{file.name}}
+                                            </a>
+                                            <span class="upload-action">
+                                            <button (click)="handleDownload(file); $event.stopPropagation();" nz-button nzSize="small" nzType="default">
+                                                <i nz-icon nzType="download" nzTheme="outline"></i>
+                                            </button>
+                                            <button (click)="handleRemove(file); $event.stopPropagation();" nz-button nzSize="small" nzType="default">
+                                                <i nz-icon nzType="delete" nzTheme="outline"></i>
+                                            </button>
+                                        </span>
+                                        </div>
+                                    </div>
+                                    <div class="upload-copy">
+                                        <nz-form-item>
+                                            <nz-input-group nzSearch [nzAddOnAfter]="suffixIconButton">
+                                                <input type="text" disabled nz-input [value]="generateImageUrl(file.url)"/>
+                                            </nz-input-group>
+                                            <ng-template #suffixIconButton>
+                                                <button style="border-radius: 0 !important;" nz-button nzType="primary" [copy-clipboard]="generateImageUrl(file.url)">
+                                                    <i nz-icon nzType="copy" nzTheme="outline"></i>
+                                                </button>
+                                            </ng-template>
+                                        </nz-form-item>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </div>
+                </div>
+            </nz-tab>
+            <nz-tab nzTitle="Preview">
+                <div class="gn-pt-10 gn-pl-15 gn-pr-15 gn-pb-10">
+                    <div nz-row nzJustify="space-between" [nzGutter]="[32, 32]">
+                        <div nz-col nzSpan="24" [nzMd]="5" [nzLg]="4">
+                            <button class="gn-mb-10" nz-button nzBlock [nzType]="screenType === '8plus' ? 'primary' : 'default'" (click)="screenType = '8plus'">Iphone 8Plus</button>
+                            <button nz-button nzBlock [nzType]="screenType === 'x' ? 'primary' : 'default'" (click)="screenType = 'x'">Iphone X</button>
+                        </div>
+                        <div nz-col nzSpan="0" [nzXs]="1" [nzSm]="2" [nzMd]="0"></div>
+                        <div nz-col>
+                            <div class="content" [class]="screenType === '8plus' ? 'screen-8plus' : 'screen-10'">
+                                <h2 class="font-weight-bold gn-mt-5 mb-0">{{this.f.title.value}}</h2>
+                                <div class="gn-mb-5"></div>
+                                <div style="color: #92949c" *ngIf="categoryName">
+                                    <small>
+                                        Đăng lúc {{formatDate(this.f.createdOnDate.value)}}
+                                        trong {{categoryName}}
+                                    </small>
+                                </div>
+                                <p class="gn-mt-5 gn-mb-5">{{this.f.summary.value}}</p>
+                                <img style="max-width: 100%;" *ngIf="imageUrl" [src]="imageUrl" alt="">
+                                <div class="post-content" [innerHTML]="content"></div>
+                            </div>
+                        </div>
+                        <div nz-col nzSpan="0" [nzXs]="1" [nzSm]="2" [nzMd]="4"></div>
+                    </div>
+                </div>
+            </nz-tab>
+        </nz-tabset>
+    </ng-template>
+
+    <ng-template #errorTmpl let-control>
+        <ul>
+            <ng-container *ngIf="control.errors">
+                <li>
+                    {{ getErrorMessage(control) | translate }}
+                </li>
+            </ng-container>
+        </ul>
+    </ng-template>
+</app-geneat-modal>

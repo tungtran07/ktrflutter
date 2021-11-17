@@ -1,0 +1,36 @@
+<div class="gn-text-center gn-mb-50">
+  <nz-avatar class="-intro-x" [nzSize]="150" nzIcon="user" nzSrc="assets/images/logo1.png"></nz-avatar>
+  <h3 class="-intro-x">{{ langPrefix + '.title' | translate }}</h3>
+  <p class="-intro-x"><strong>{{ langPrefix + '.subTitle' | translate }}</strong></p>
+</div>
+
+<div class="-intro-x">
+  <app-geneat-form
+    [columns]="columns"
+    [loading]="isLoading"
+    (handSubmit)="submitForm($event)"
+    textSubmit="{{langPrefix + '.title' | translate}}"
+  ></app-geneat-form>
+</div>
+
+<div nz-row class="gn-mt-30 -intro-x">
+  <div nz-col nzSpan="12" class="gn-text-center">
+    <button nz-button nzType="link" [routerLink]="['/auth/register']">Đăng ký Cộng tác viên</button>
+  </div>
+  <div nz-col nzSpan="12" class="gn-text-center">
+    <button nz-button nzType="link" (click)="handleShowForgotPassword()">Quên mật khẩu?</button>
+  </div>
+</div>
+<app-geneat-modal
+  [visible]="isVisibleForgotPassword"
+  [title]="'Lấy lại mật khẩu'"
+  (clickOk)="handleForgotPasswordAction()"
+  (clickCancel)="handleCancelForgotPassword()"
+  [contentModal]="contentModal"
+  [width]="600"
+  [okText]="'Gửi yêu cầu'"
+>
+  <ng-template #contentModal>
+    <input nz-input placeholder="Nhập số điện thoại" [(ngModel)]="phoneForgotPassword" />
+  </ng-template>
+</app-geneat-modal>

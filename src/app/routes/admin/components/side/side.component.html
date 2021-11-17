@@ -1,0 +1,22 @@
+<div class="logo">
+  <img src="assets/images/logo.png" />
+  <h1><img src="assets/images/logo-text.png" /></h1>
+</div>
+<ul nz-menu nzTheme="light" nzMode="inline" [nzInlineCollapsed]="isCollapsed">
+  <ng-template ngFor let-group [ngForOf]="menus">
+    <li nz-submenu [(nzOpen)]="group.open" nzTitle="{{group.name}}">
+      <ul>
+        <ng-template ngFor let-menu [ngForOf]="group.child">
+          <li
+            nz-menu-item
+            [routerLink]="menu.path"
+            nzMatchRouter
+          >
+            <i class="{{menu.icon}}"></i>
+            <span>{{menu.name}}</span>
+          </li>
+        </ng-template>
+      </ul>
+    </li>
+  </ng-template>
+</ul>

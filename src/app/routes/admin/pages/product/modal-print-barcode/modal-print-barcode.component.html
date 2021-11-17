@@ -1,0 +1,123 @@
+<app-geneat-modal
+  [visible]="isVisibleBarcode"
+  title="In mã vạch"
+  (clickCancel)="handleCancelBarcode()"
+  (clickOk)="handleOkBarcode()"
+  [contentModal]="contentModalBarcode"
+  [width]="800"
+  okText="In mã vạch"
+>
+  <ng-template #contentModalBarcode>
+    <div class="gn-mb-10">
+      <div nz-row [nzGutter]="5" nzAlign="middle">
+        <div nz-col nzFlex="7">
+          <nz-input-group nzPrefix="Offset" [nzSuffix]="suffixTemplateInfo">
+            <input nz-input placeholder="Nhập offset" [(ngModel)]="offsetPrint"/>
+          </nz-input-group>
+          <ng-template #suffixTemplateInfo><i nz-tooltip nzTooltipTitle="Vị trí bắt đầu trên giấy in" class="las la-lg la-question-circle"></i></ng-template>
+        </div>
+        <div nz-col nzFlex="7">
+          <nz-input-group nzPrefix="Dài" nzSuffix="px">
+            <input nz-input placeholder="Nhập chiều dài" [(ngModel)]="widthPrint"/>
+          </nz-input-group>
+        </div>
+        <div nz-col nzFlex="7">
+          <nz-input-group nzPrefix="Cao" nzSuffix="px">
+            <input nz-input placeholder="Nhập chiều cao" [(ngModel)]="heightPrint"/>
+          </nz-input-group>
+        </div>
+        <div nz-col nzFlex="3">
+          <button nz-button nzType="primary" (click)="handlePrintBarcode(list, false)">Xem thử</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="gn-mb-10" nz-row [nzGutter]="0" nzAlign="middle" nzJustify="space-between">
+      <div nz-col flex="auto" style="border: solid 1px #000000;" nz-tooltip [nzTooltipTitle]="titleTemplate">
+        <img [src]="data?.barcode" [alt]="data?.name">
+      </div>
+      <ng-template #titleTemplate>
+        <table class="table_tooltip">
+          <thead>
+          <tr>
+            <th>Số ký tự mã</th>
+            <th>Độ dài</th>
+            <th>Độ cao</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr><td>3</td><td>240</td><td>90</td></tr>
+          <tr><td>4</td><td>260</td><td>90</td></tr>
+          <tr><td>5</td><td>280</td><td>90</td></tr>
+          <tr><td>6</td><td>300</td><td>90</td></tr>
+          <tr><td>7</td><td>320</td><td>90</td></tr>
+          <tr><td>8</td><td>340</td><td>90</td></tr>
+          <tr><td>9</td><td>360</td><td>90</td></tr>
+          <tr><td>10</td><td>380</td><td>90</td></tr>
+          </tbody>
+          <caption>
+            <small style="color: #ffffff">Tăng độ dài lên theo bước 10 nếu mã sản phẩm có các ký tự đặc biệt như dấu chấm, dấu phẩy, dấu ngoặc, gạch dưới</small>
+          </caption>
+        </table>
+
+      </ng-template>
+      <div nz-col flex="auto">
+        <table style="border: solid 1px #000000; width: 224px; height: 118px; font-family: 'Arial'; font-size: 14px; color: black;">
+          <tbody>
+          <tr>
+            <td align="center" valign="middle">
+              <div style="margin-bottom: 4px">{{data?.name + ' (36)'}}</div>
+              <img style="width: 98%" [src]="data?.barcode" [alt]="data?.name">
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+    <nz-collapse>
+      <ng-template ngFor let-product let-indexTop="index" [ngForOf]="listPrintBarcode">
+        <nz-collapse-panel [nzHeader]="product.name" >
+          <div nz-row [nzGutter]="5" nzAlign="middle">
+            <div nz-col nzFlex="30px"><strong>STT</strong></div>
+            <div nz-col nzFlex="auto"><strong>Tên sản phẩm</strong></div>
+            <div nz-col nzFlex="80px"><strong>Size</strong></div>
+            <div nz-col nzFlex="70px"><strong>Tồn kho</strong></div>
+            <div nz-col nzFlex="70px"><strong>SL In</strong></div>
+            <div nz-col nzFlex="116px" class="gn-text-center"><strong>Thao tác</strong></div>
+          </div>
+          <hr />
+          <ng-template [ngIf]="product.list" ngFor let-item let-index="index" [ngForOf]="product['list']">
+            <div nz-row [nzGutter]="5" nzAlign="middle" class="hover">
+              <div nz-col nzFlex="30px" class="gn-text-center">{{index + 1}}</div>
+              <div nz-col nzFlex="auto" [ngClass]="{'gn-text-bold': item.quantity > 0}">{{item.name}} ({{item.code}})</div>
+              <div nz-col nzFlex="80px" class="gn-text-center">{{item.size}}</div>
+              <div nz-col nzFlex="80px" class="gn-text-center">{{item.quantity}}</div>
+              <div nz-col nzFlex="70px">
+                <input nz-input [min]="0" [ngModel]="item.quantityPrint" (ngModelChange)="handleSetQuantityPrint($event, index, indexTop)" />
+              </div>
+              <div nz-col nzFlex="116px" class="gn-text-center">
+                <button nz-button nzSize="small" (click)="item.quantityPrint = item.quantity">Điền SL tồn kho</button>
+              </div>
+            </div>
+          </ng-template>
+        </nz-collapse-panel>
+
+      </ng-template>
+    </nz-collapse>
+  </ng-template>
+</app-geneat-modal>
+<div class="gn-display-none">
+  <table id="printProduct">
+    <ng-template ngFor let-item let-index="index" [ngForOf]="listFinalPrintBarcode">
+      <tr>
+        <ng-template ngFor let-subItem [ngForOf]="item">
+          <td [height]="heightPrint" [width]="widthPrint" align="center" valign="middle">
+            <div *ngIf="subItem.name">{{subItem.name}}</div>
+            <img *ngIf="subItem.code" [src]="listImagePrintBarcode[subItem.code]" alt="{{subItem.name}}">
+          </td>
+        </ng-template>
+      </tr>
+    </ng-template>
+  </table>
+</div>

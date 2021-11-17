@@ -1,0 +1,36 @@
+<app-geneat-modal
+  [title]="title | translate"
+  [visible]="visible"
+  (clickOk)="handleOk($event)"
+  (clickCancel)="handleCancel()"
+  [loading]="loading"
+  [contentModal]="contentModal"
+  [width]="width"
+  [okText]="okText"
+  [classModal]="classModal"
+  [okHidden]="okHidden"
+  [okDisabled]="okDisabled"
+  [extendFooterButton]="extendFooterButton"
+>
+  <ng-template #contentModal>
+    <ng-container [ngTemplateOutlet]="extendModalTop"></ng-container>
+    <div nz-row [nzGutter]="16">
+      <div *ngIf="extendModalLeft" nz-col [nzFlex]="widthModalLeft ? widthModalLeft + 'px' : 'auto'">
+        <div [ngTemplateOutlet]="extendModalLeft"></div>
+      </div>
+      <div nz-col [nzFlex]="widthModalLeft ? (width - widthModalLeft - 32) + 'px' : 'auto'">
+        <app-geneat-form
+          *ngIf="firstLoad && showForm"
+          #myForm
+          [columns]="columns"
+          [values]="values"
+          [loading]="loading && isLoading"
+          [col]="col"
+          [widthLabel]="widthLabel"
+          (handSubmit)="handleOk($event)"
+        ></app-geneat-form>
+        <ng-container [ngTemplateOutlet]="extendModal"></ng-container>
+      </div>
+    </div>
+  </ng-template>
+</app-geneat-modal>

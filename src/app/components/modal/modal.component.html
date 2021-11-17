@@ -1,0 +1,22 @@
+<nz-modal
+  [nzTitle]="title"
+  [nzWidth]="width"
+  [(nzVisible)]="visible"
+  (nzOnCancel)="handleCancel()"
+  (nzAfterOpen)="afterOpen()"
+  [nzKeyboard]="keyboard"
+  [nzFooter]="notFooter === true ? null : modalFooter"
+  [nzClassName]="classModal"
+>
+  <ng-template nzModalContent>
+    <nz-spin [nzSpinning]="loading">
+      <ng-container [ngTemplateOutlet]="contentModal"></ng-container>
+    </nz-spin>
+  </ng-template>
+  <ng-template #modalFooter>
+    <ng-container [ngTemplateOutlet]="extendFooterButton"></ng-container>
+    <button nz-button nzType="default" (click)="handleCancel()">{{langPrefix + '.cancel' | translate}}</button>
+    <button nz-button nzType="primary" *ngIf="okHidden" [disabled]="okDisabled" (click)="handleOk(null)" [nzLoading]="loading">{{okText ? okText : (langPrefix + '.save' | translate)}}</button>
+  </ng-template>
+</nz-modal>
+

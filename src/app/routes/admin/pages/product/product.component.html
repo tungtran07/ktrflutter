@@ -1,0 +1,169 @@
+<app-geneat-modal
+  [visible]="isVisibleQuantity"
+  [title]="('routes.Admin.Order.edit' | translate) + ' ' + data?.name"
+  (clickOk)="handleQuantityAction(listSizes)"
+  (clickCancel)="handleCancelQuantity()"
+  [contentModal]="contentModal"
+  [width]="800"
+  [okText]="'components.ModalForm.save' | translate"
+>
+  <ng-template #contentModal>
+    <h3>{{ langPrefix + '.size' | translate }}</h3>
+    <div class="gn-text-center">
+      <nz-space [nzSize]="25">
+        <ng-template ngFor let-item [ngForOf]="listSizes" let-index="index">
+          <nz-badge *nzSpaceItem [nzCount]="item.quantity" [nzOverflowCount]="999999999">
+            <button nz-popover nz-button [nzType]="item.quantity > 0 && 'primary'" nzPopoverTitle="Size {{item.size}}" [nzPopoverContent]="contentTemplate">{{item.size}}</button>
+            <ng-template #contentTemplate>
+              <nz-input-number [(ngModel)]="item.quantity" [nzStep]="1"></nz-input-number>
+            </ng-template>
+          </nz-badge>
+        </ng-template>
+      </nz-space>
+    </div>
+  </ng-template>
+</app-geneat-modal>
+
+<app-geneat-datatable
+  *ngIf="initShow"
+  [display]="2"
+  #myTable
+  [showCheckbox]="user.level > 8"
+  [lightBox]="true"
+  [rightHeader]="rightTable"
+  [columns]="listOfColumns"
+  [data]="listOfData"
+  [total]="totalItem"
+  [loading]="isLoading"
+  (ngChange)="onChange($event)"
+  [pageSizeOptions]="[24, 48, 72, 96]"
+  [renderGrid]="renderGrid"
+  [filterGrid]="filterGrid"
+>
+  <ng-template #rightTable>
+    <div>
+      <button *ngIf="user.level === 10" nz-button nzType="primary" (click)="handleAddNew()">
+        <i class="las la-plus la-lg gn-mr-5"></i>
+        {{ 'routes.Admin.Order.addNew' | translate }}
+      </button>
+<!--      <button class="gn-ml-5" [disabled]="myTable.dataChecked.length === 0" nz-button nzType="primary" (click)="handleAddToCart(myTable.dataChecked)">-->
+<!--        <i class="las la-cart-plus la-lg gn-mr-5"></i>-->
+<!--        {{ 'Thêm vào giỏ' | translate }}-->
+<!--      </button>-->
+      <button *ngIf="user.level > 8" class="gn-ml-5" [disabled]="myTable.dataChecked.length === 0" nz-button nzType="primary" (click)="handlePrintBarcode()">
+        <i class="las la-barcode la-lg gn-mr-5"></i>
+        {{ 'In mã vạch' | translate }}
+      </button>
+    </div>
+  </ng-template>
+  <ng-template #filterGrid>
+    <div class="gn-mb-24" nz-row nzJustify="flex-start">
+      <nz-button-group class="gn-mr-10">
+        <ng-template [ngForOf]="listTypeProduct" ngFor let-item let-i="index">
+          <button nz-button [nzType]="filterType['itemTypeId'] === item.id && 'primary'" (click)="handleChangeType(item.id, 'itemTypeId')">{{item.name}}</button>
+        </ng-template>
+      </nz-button-group>
+
+      <nz-button-group>
+        <button nz-button [nzType]="filterType['isFreeShip'] === 'true' && 'primary'" (click)="handleChangeType('true', 'isFreeShip')">Free Ship</button>
+        <button nz-button [nzType]="filterType['discountPercent'] === 'true' && 'primary'" (click)="handleChangeType('true', 'discountPercent')">Giảm giá</button>
+      </nz-button-group>
+    </div>
+  </ng-template>
+  <ng-template #renderGrid let-item>
+    <div class="block_image hover" (click)="handleDetail(item)">
+      <div>
+        <div class="gn-width-100" [ngStyle]="{backgroundImage: 'url(' + item?.imageUrl + ')',backgroundSize: 'cover', height: '25vh'}"></div>
+        <span *ngIf="item['isFreeShip']" class="lable_bottom gn-font-18">Freeship</span>
+        <span *ngIf="item.discountPercent > 0" class="lable_top gn-font-18">-{{item.discountPercent}}%</span>
+      </div>
+    </div>
+    <h4 class="gn-mb-0">{{item['itemTypeName']}}</h4>
+    <h3 class="gn-color-red">
+      {{item['name']}}
+    </h3>
+    <div>
+      <i class="las la-user la-lg"></i>
+      CTV thường:
+      {{item.discountPercent > 0 ? formatCurrency((item.resellerUnitPrice1 - ((item.resellerUnitPrice1 * item.discountPercent) / 100))) : ''}}
+      <span [ngClass]="{'before-discount-price': item.discountPercent > 0}">{{formatCurrency(item.resellerUnitPrice1)}}</span>
+    </div>
+    <div>
+      <i class="las la-user-plus la-lg gn-color-red"></i>
+      CTV ruột:
+      {{item.discountPercent > 0 ? formatCurrency((item.resellerUnitPrice2 - ((item.resellerUnitPrice2 * item.discountPercent) / 100))) : ''}}
+      <span [ngClass]="{'before-discount-price': item.discountPercent > 0}">{{formatCurrency(item.resellerUnitPrice2)}}</span>
+    </div>
+    <p>
+      <i class="las la-user-friends la-lg"></i>
+      Giá shop:
+      {{item.discountPercent > 0 ? formatCurrency((item.resellerUnitPrice3 - ((item.resellerUnitPrice3 * item.discountPercent) / 100))) : ''}}
+      <span [ngClass]="{'before-discount-price': item.discountPercent > 0}">{{formatCurrency(item.resellerUnitPrice3)}}</span>
+    </p>
+  </ng-template>
+</app-geneat-datatable>
+
+<app-geneat-modal
+  [visible]="isVisibleDetail"
+  [title]="(data && data['name'])"
+  (clickCancel)="handleCancelDetail()"
+  [contentModal]="contentModalDetail"
+  [notFooter]="true"
+  [width]="800"
+>
+  <ng-template #contentModalDetail>
+    <div class="block_image">
+      <p>
+        <img class="gn-width-100" src="{{data['imageUrl']}}" alt="">
+        <span *ngIf="data['isFreeShip']" class="lable_bottom gn-font-18">Freeship</span>
+        <span *ngIf="data.discountPercent > 0" class="lable_top gn-font-18">-{{data.discountPercent}}%</span>
+      </p>
+    </div>
+    <h3 class="gn-mb-0">{{data['itemTypeName']}}</h3>
+    <h2 class="gn-color-red">
+      {{data['name']}}
+    </h2>
+    <div>
+      <i class="las la-user la-lg"></i>
+      CTV thường:
+      {{data.discountPercent > 0 ? formatCurrency((data.resellerUnitPrice1 - ((data.resellerUnitPrice1 * data.discountPercent) / 100))) : ''}}
+      <span [ngClass]="{'before-discount-price': data.discountPercent > 0}">{{formatCurrency(data.resellerUnitPrice1)}}</span>
+    </div>
+    <div>
+      <i class="las la-user-plus la-lg gn-color-red"></i>
+      CTV ruột:
+      {{data.discountPercent > 0 ? formatCurrency((data.resellerUnitPrice2 - ((data.resellerUnitPrice2 * data.discountPercent) / 100))) : ''}}
+      <span [ngClass]="{'before-discount-price': data.discountPercent > 0}">{{formatCurrency(data.resellerUnitPrice2)}}</span>
+    </div>
+    <p>
+      <i class="las la-user-friends la-lg"></i>
+      Giá shop:
+      {{data.discountPercent > 0 ? formatCurrency((data.resellerUnitPrice3 - ((data.resellerUnitPrice3 * data.discountPercent) / 100))) : ''}}
+      <span [ngClass]="{'before-discount-price': data.discountPercent > 0}">{{formatCurrency(data.resellerUnitPrice3)}}</span>
+    </p>
+    <h3 *ngIf="data['sizeWithQuantity'].length">Chọn size</h3>
+    <div class="gn-text-center">
+      <ng-template ngFor let-i="index" let-item [ngForOf]="data['sizeWithQuantity']">
+        <button class="gn-ml-5 gn-mr-5" *ngIf="item.quantity > 0" [ngClass]="{'red': item.quantity < 4}" nz-button [nzType]="selectSize === item.size ? 'primary' : ''" (click)="selectSize = item.size">
+          {{item.size}}
+        </button>
+      </ng-template>
+    </div>
+    <button class="gn-mt-10 green" [disabled]="selectSize === ''" nzBlock nz-button nzType="primary" (click)="handleDetailAddToCart()">
+      {{data['sizeWithQuantity'].length > 0 ? 'Thêm vào giỏ' : 'Sản phẩm tạm hết hàng'}}
+    </button>
+  </ng-template>
+</app-geneat-modal>
+
+
+<app-modal-edit-product
+  [isVisible]="isVisible" [data]="data" (cancelModal)="handleCancel()" (changeModal)="success($event)"
+  [listTypeProduct]="listTypeProduct" (showProductLink)="handleEditLink($event)"
+></app-modal-edit-product>
+
+<app-modal-edit-product
+  [isVisible]="isVisibleLink" [data]="dataLink" (cancelModal)="handleCancelLink()" (changeModal)="successLink($event)"
+  [listTypeProduct]="listTypeProduct" [linkProduct]="false"
+></app-modal-edit-product>
+
+<app-modal-print-barcode (cancelModal)="handleCancelBarcode()" [isVisible]="isVisibleBarcode" [list]="myTable?.dataChecked ? myTable?.dataChecked : []"></app-modal-print-barcode>

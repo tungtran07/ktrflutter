@@ -1,0 +1,192 @@
+<app-geneat-modal-form
+  #modalFormComponent
+  [visible]="isVisibleEdit"
+  [title]="data?.id ? ('Sửa đơn hàng') + ' ' + data?.orderNo : ('Tạo mới đơn hàng')"
+  [widthLabel]="140"
+  (clickOk)="handleOk(0)"
+  (clickCancel)="handleCancel()"
+  [okText]="data?.id ? 'Lưu đơn' : 'Gửi đơn'"
+  [columns]="listOfColumns"
+  [values]="data"
+  [loading]="isLoading"
+  [col]="2"
+  [extendModal]="extendModal"
+  [extendModalTop]="extendModalTop"
+  [extendFooterButton]="footerButton"
+  [firstLoad]="firstLoad"
+  [okHidden]="((!data?.id || (data?.id && data?.type === 'RETL')) && !!dataPayment && !!dataPayment?.isValid && !messageErrorNo) || (data?.id && data?.type !== 'RETL')"
+  [okDisabled]="!confirmPayment && (!data?.id || (data?.id && data?.type === 'RETL'))"
+  classModal="modal-not-center"
+>
+  <ng-template #extendModalTop>
+    <div class="gn-mb-10 text-left">
+      <button class="green gn-mb-10" nz-button nzType="primary" (click)="handleShowUser()">
+        <i class="las la-user-plus la-lg gn-mr-5"></i>
+        Thêm khách hàng từ danh sách
+      </button>
+      <nz-alert *ngIf="warningShipReturn" nzType="warning" [nzMessage]="warningShipReturn"></nz-alert>
+      <nz-alert *ngIf="messageWarningNo" nzType="warning" [nzMessage]="messageWarningNo"></nz-alert>
+      <nz-alert class="gn-mt-10" *ngIf="dataPayment?.warningMessage" [nzType]="dataPayment?.isValid ? 'warning' : 'error'" [nzMessage]="dataPayment?.warningMessage"></nz-alert>
+      <nz-alert class="gn-mt-10" *ngIf="messageErrorNo" nzType="error" [nzMessage]="messageErrorNo"></nz-alert>
+    </div>
+  </ng-template>
+  <ng-template #extendModal>
+    <app-geneat-datatable
+      #tableProduct
+      width="1200px"
+      [save]="false"
+      [lightBox]="true"
+      [showSearch]="false"
+      [rightHeader]="rightTableProduct"
+      [pageSize]="10"
+      [columns]="columnsProduct"
+      [data]="data['invoiceItems']"
+    ></app-geneat-datatable>
+    <ng-template #rightTableProduct>
+      <div *ngIf="!data?.id || (!!data?.id && data.type !== 'PREP' && data.type !== 'SHPE')">
+        <button class="gn-ml-5" nz-button nzType="primary" (click)="handleAddNewProduct()">
+          <i class="las la-plus la-lg gn-mr-5"></i>
+          Thêm sản phẩm
+        </button>
+        <button class="gn-ml-5" [disabled]="cart.length === 0" nz-button nzType="primary" (click)="handleAddProductFormCart(cart)">
+          <i class="las la-cart-arrow-down la-lg gn-mr-5"></i>
+          {{ 'Thêm sản phẩm từ giỏ' | translate }}
+        </button>
+      </div>
+    </ng-template>
+
+    <ng-container *ngIf="dataPayment">
+      <h3 class="gn-mt-10">Thông tin thanh toán</h3>
+      <nz-descriptions class="table_order three" nzBordered nzSize="small" [nzColumn]="{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }">
+        <nz-descriptions-item [nzTitle]="'Giá trị đơn hàng'"><span [innerHTML]="formatCurrency(dataPayment?.grossAmount)"></span></nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'Phí đơn hàng'" *ngIf="typeOrder !== 'RETL' && typeOrder !== 'WHSL'"><span [innerHTML]="formatCurrency(dataPayment?.paymentFee)"></span></nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'Phí ship'" *ngIf="typeOrder !== 'SHPE'"><span [innerHTML]="formatCurrency(dataPayment?.shippingPrice)"></span></nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'Tổng đơn'"><span [innerHTML]="formatCurrency(dataPayment?.totalAmount)"></span></nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'Số dư trong ví'" *ngIf="typeOrder !== 'RETL' && typeOrder !== 'WHSL'"><span [innerHTML]="formatCurrency(dataPayment?.walletBalanceBefore)"></span></nz-descriptions-item>
+        <nz-descriptions-item [nzTitle]="'Số dư sau thanh toán'" *ngIf="typeOrder !== 'RETL' && typeOrder !== 'WHSL'"><span [innerHTML]="formatCurrency(dataPayment?.walletBalanceAfter)"></span></nz-descriptions-item>
+      </nz-descriptions>
+    </ng-container>
+
+  </ng-template>
+  <ng-template #footerButton>
+    <button *ngIf="((!data?.id) || (data?.id && data?.type === 'RETL')) && !dataPayment" class="green" nz-button nzType="primary" (click)="handleOk(2)">Xem phí và xác nhận mua hàng</button>
+    <button [disabled]="confirmPayment" *ngIf="!!dataPayment && !!dataPayment?.isValid" nz-button nzType="primary" (click)="handleConfirmPayment()">Đồng ý thanh toán</button>
+    <button [disabled]="!confirmPayment" *ngIf="!data?.id && typeOrder !== 'SHPE' && !!dataPayment && !!dataPayment?.isValid && !messageErrorNo" class="green" nz-button nzType="primary" (click)="handleOk(1)">Lưu nháp</button>
+  </ng-template>
+</app-geneat-modal-form>
+<app-geneat-modal
+  [visible]="isVisibleUser"
+  [title]="'Thêm khách hàng từ danh sách'"
+  (clickCancel)="handleCancelUser()"
+  [contentModal]="contentModalUser"
+  [width]="448"
+  [notFooter]="true"
+>
+  <ng-template #contentModalUser>
+    <nz-spin [nzSpinning]="isLoading">
+
+      <nz-input-group [nzSuffix]="suffixIconSearch">
+        <input
+          (change)="searchFullAccount($event.target['value'])"
+          type="text"
+          nz-input
+          placeholder="{{'components.Datatable.pleaseEnterValueToSearch' | translate}}"
+        />
+
+      </nz-input-group>
+      <ng-template #suffixIconSearch>
+        <i class="las la-search la-lg"></i>
+      </ng-template>
+      <nz-list nzItemLayout="horizontal" [nzLoading]="isLoading">
+        <nz-list-item *ngFor="let item of listAccount" (click)="handleSelectAccount(item)">
+          <nz-list-item-meta>
+            <nz-list-item-meta-title>
+              {{item.fullName}} - {{item.phone}}
+            </nz-list-item-meta-title>
+            <nz-list-item-meta-description>
+              {{item.address}}
+            </nz-list-item-meta-description>
+          </nz-list-item-meta>
+        </nz-list-item>
+        <nz-list-empty *ngIf="listAccount.length === 0"></nz-list-empty>
+      </nz-list>
+    </nz-spin>
+
+  </ng-template>
+</app-geneat-modal>
+<app-geneat-modal-form
+  #formComponent
+  [visible]="isVisibleProduct"
+  [title]="dataProduct ? ('routes.Admin.Order.edit' | translate) : ('routes.Admin.Order.addNew' | translate)"
+  [columns]="columnsProduct"
+  [values]="dataProduct"
+  [loading]="isLoading"
+  (clickOk)="handleOkProduct($event)"
+  (clickCancel)="handleCancelProduct()"
+  [firstLoad]="firstLoadProduct"
+  [col]="1"
+  [widthLabel]="90"
+  [width]="900"
+  [extendModal]="extendModalProduct"
+  [extendModalLeft]="extendModalProductLeft"
+  [widthModalLeft]="300"
+>
+  <ng-template #extendModalProductLeft>
+    <ng-container *ngIf="productSelect">
+      <div class="block_image">
+        <p style="position: relative">
+          <small *ngIf="productSelect.discountPercent > 0" class="lable_top gn-font-18">-{{productSelect.discountPercent}}%</small>
+          <img class="gn-width-100" src="{{productSelect['imageUrl']}}" alt="">
+          <small *ngIf="productSelect['isFreeShip']" class="lable_bottom gn-font-18">Freeship</small>
+        </p>
+      </div>
+      <h3 class="gn-mb-0">{{productSelect['itemTypeName']}}</h3>
+      <h2 class="gn-color-red">
+        {{productSelect['name']}}
+      </h2>
+      <div>
+        <i class="las la-user la-lg"></i>
+        CTV thường:
+        {{productSelect.discountPercent > 0 ? formatCurrency((productSelect.resellerUnitPrice1 - ((productSelect.resellerUnitPrice1 * productSelect.discountPercent) / 100))) : ''}}
+        <span [ngClass]="{'before-discount-price': productSelect.discountPercent > 0}">{{formatCurrency(productSelect.resellerUnitPrice1)}}</span>
+      </div>
+      <div>
+        <i class="las la-user-plus la-lg gn-color-red"></i>
+        CTV ruột:
+        {{productSelect.discountPercent > 0 ? formatCurrency((productSelect.resellerUnitPrice2 - ((productSelect.resellerUnitPrice2 * productSelect.discountPercent) / 100))) : ''}}
+        <span [ngClass]="{'before-discount-price': productSelect.discountPercent > 0}">{{formatCurrency(productSelect.resellerUnitPrice2)}}</span>
+      </div>
+      <p>
+        <i class="las la-user-friends la-lg"></i>
+        Giá shop:
+        {{productSelect.discountPercent > 0 ? formatCurrency((productSelect.resellerUnitPrice3 - ((productSelect.resellerUnitPrice3 * productSelect.discountPercent) / 100))) : ''}}
+        <span [ngClass]="{'before-discount-price': productSelect.discountPercent > 0}">{{formatCurrency(productSelect.resellerUnitPrice3)}}</span>
+      </p>
+    </ng-container>
+  </ng-template>
+  <ng-template #extendModalProduct>
+    <table style="margin-left: 90px" *ngIf="suggestedPrices.length > 0 && typeOrder !== 'PREP' && typeOrder !== 'SHPE'" class="gn-border-table">
+      <thead>
+      <tr>
+        <td class="gn-p-5" align="right"><strong>#</strong></td>
+        <td class="gn-p-5" align="right"><strong>Gợi ý giá</strong></td>
+        <td class="gn-p-5" align="right"><strong>Lãi</strong></td>
+        <td></td>
+      </tr>
+      </thead>
+      <tbody>
+      <ng-template ngFor let-suggested [ngForOf]="suggestedPrices" let-index="index">
+        <tr>
+          <td class="gn-p-5" align="right">{{index + 1}}</td>
+          <td class="gn-p-5" align="right" [innerHTML]="formatCurrency(suggested.price)"></td>
+          <td class="gn-p-5" align="right" [innerHTML]="formatCurrency(suggested.interest)"></td>
+          <td width="38">
+            <button nz-button nzSize="small" (click)="setPrice(suggested.price.toString())">Chọn</button>
+          </td>
+        </tr>
+      </ng-template>
+
+      </tbody>
+    </table>
+  </ng-template>
+</app-geneat-modal-form>

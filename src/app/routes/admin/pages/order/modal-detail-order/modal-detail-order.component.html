@@ -1,0 +1,179 @@
+<app-geneat-modal
+  [visible]="isVisibleDetail"
+  [title]="data && (langPrefix +  '.orderInformation' | translate) + ' ' + data['name']"
+  (clickCancel)="handleCancelDetail()"
+  [contentModal]="contentModalDetail"
+  [notFooter]="true"
+>
+  <ng-template #contentModalDetail>
+    <nz-spin [nzSpinning]="isLoading">
+      <nz-tabset nzType="card" *ngIf="data" (nzSelectedIndexChange)="handleChangeIndex($event)">
+        <nz-tab nzTitle="Thông tin">
+          <h3 class="gn-mt-10">Mô tả</h3>
+          <nz-descriptions class="table_order" nzBordered nzSize="small" [nzColumn]="{ xxl: 4, xl: 4, lg: 4, md: 2, sm: 2, xs: 1 }">
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.orderNo' | translate">{{ data.orderNo }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.total' | translate"><span [innerHTML]="formatCurrency(data.total)"></span></nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'Tên CTV'">
+              {{ data.createdByUser }}
+              <button nz-button nzSize="small" nzType="primary" (click)="onOpenWallet()">
+                Xem tài khoản
+              </button>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.createdOnDate' | translate">{{formatDate(data.createdOnDate)}}</nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.vnPostOrderCode' | translate">{{ data.invoiceShipping.vnPostOrderCode }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.shippingPrice' | translate"><span [innerHTML]="formatCurrency(data.shippingPrice)"></span></nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'Điện thoại CTV'">{{ data.createdByUserPhone }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.lastModifiedOnDate' | translate">{{formatDate(data.lastModifiedOnDate)}}</nz-descriptions-item>
+
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.status' | translate">
+              <button class="gn-no-click" nz-button nzSize="small" nzType="primary" [ngStyle]="{
+                    backgroundColor: listColorStatus[data.status],
+                    borderColor: listColorStatus[data.status],
+                    color: pickTextColorBasedOnBgColorAdvanced(listColorStatus[data.status], '#FFFFFF', '#000000')
+                  }">
+                {{ langPrefix + '.' + (data.status !== 'WHSL_COMPLETED' ? data.status : 'COMPLETED') | translate}}
+              </button>
+            </nz-descriptions-item>
+
+            <nz-descriptions-item *ngIf="data.type === 'RETL'" [nzTitle]="langPrefix +  '.resellerAmount' | translate"><span [innerHTML]="formatCurrency(data.type === 'RETL' ? data.total - data.shippingPrice - data.resellerAmount : 0)"></span></nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data.type === 'PREP' || data.type === 'SHPE'" [nzTitle]="'Phí thanh toán'"><span [innerHTML]="formatCurrency(data.paymentFee)"></span></nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="langPrefix +  '.type' | translate" [nzSpan]="(data.type === 'WHSL' || data.type === 'SHPE')? 1 : 2">
+              {{langPrefix + '.' + data.type| translate}}
+            </nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data.type === 'SHPE'" [nzTitle]="'Mã đơn Shoppe'">{{ data.shopeeOrderNo }}</nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data.type === 'SHPE'" [nzTitle]="'Đơn vị vận chuyển'">{{ data.shippingCarrier }}</nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data.status === 'CANCEL'" [nzTitle]="'Lý do hủy đơn'">{{ data.cancelReason }}</nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data.type === 'SHPE'" [nzTitle]="langPrefix +  '.customerNote' | translate">{{ data.customerNote }}</nz-descriptions-item>
+
+          </nz-descriptions>
+
+          <ng-container *ngIf="data.type !== 'SHPE'">
+            <h3 class="gn-mt-10">{{langPrefix +  '.shopper' | translate}}</h3>
+            <nz-descriptions class="table_order three" nzBordered nzSize="small" [nzColumn]="{ xxl: 2, xl: 2, lg: 2, md: 2, sm: 2, xs: 1 }" >
+              <nz-descriptions-item [nzTitle]="langPrefix +  '.customerName' | translate">{{ data.customerName }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="langPrefix +  '.customerApartmentNumber' | translate">{{ data.customerAddress }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="langPrefix +  '.customerPhone' | translate">{{ data.customerPhone }}</nz-descriptions-item>
+              <nz-descriptions-item [nzTitle]="langPrefix +  '.customerNote' | translate">{{ data.customerNote }}</nz-descriptions-item>
+            </nz-descriptions>
+          </ng-container>
+
+
+          <h3 class="gn-mt-10" *ngIf="data?.type === 'RETL'">Vận chuyển</h3>
+
+          <nz-descriptions class="table_order three" nzBordered nzSize="small" [nzColumn]="{ xxl: user.level === 10 ? 2 : 3, xl: user.level === 10 ? 2 : 3, lg: user.level === 10 ? 2 : 3, md: 2, sm: 2, xs: 1 }" *ngIf="data?.type === 'RETL'">
+            <nz-descriptions-item
+              [nzTitle]="'Đang chọn (click để đổi)'"
+              *ngIf="data && (data.status === 'WAIT_CONFIRM' || data.status === 'DRAFT' || data.status === 'CANCEL' || data.status === 'OUT_OF_STOCK') && user.level === 10"
+            >
+              <button nz-button nzType="primary" [ngClass]="{warning: data.invoiceShipping?.shipperCompanyName == 'VIETTELPOST'}" (click)="onSwitchShippingCompany()">
+                {{data.invoiceShipping.shipperCompanyName}}
+              </button>
+            </nz-descriptions-item>
+            <nz-descriptions-item
+              [nzTitle]="'Đơn vị vận chuyển'"
+              *ngIf="(user.level !== 10 || (user.level === 10 && data?.status !== 'WAIT_CONFIRM' && data?.status !== 'DRAFT' &&  data?.status !== 'CANCEL' &&  data?.status !== 'OUT_OF_STOCK'))"
+            >
+              <button class="gn-no-click" nz-button nzSize="small" nzType="primary" [ngClass]="{warning: data.invoiceShipping?.shipperCompanyName == 'VIETTELPOST'}">
+                {{data.invoiceShipping.shipperCompanyName}}
+              </button>
+            </nz-descriptions-item>
+            <nz-descriptions-item
+              [nzTitle]="'Dịch vụ'"
+              *ngIf="user.level === 10"
+            >{{data.invoiceShipping.serviceName}}</nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data && data.status !== 'WAIT_CONFIRM' && data.status !== 'DRAFT' && data.type !== 'WHSL'" [nzTitle]="'Trạng thái thu gom'">{{data.invoiceShipping.vnPostCollectResultStatus == 1 ? 'Đã thu gom' : 'Chưa thu gom'}}</nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data && data.status !== 'WAIT_CONFIRM' && data.status !== 'DRAFT' && data.type !== 'WHSL'" [nzTitle]="'Cập nhật lần cuối'">{{formatDate(data.invoiceShipping?.vnPostLastSyncedDate)}}</nz-descriptions-item>
+            <nz-descriptions-item *ngIf="data && data.status !== 'WAIT_CONFIRM' && data.status !== 'DRAFT' && data.type !== 'WHSL'" [nzTitle]="'Thông tin giao nhận cuối cùng'"  [nzSpan]="2">{{data.invoiceShipping?.vnPostShippingState}}</nz-descriptions-item>
+          </nz-descriptions>
+          <div *ngIf="changeStatusOrder" class="gn-text-right gn-mt-10">
+            <ng-template [ngForOf]="allowStatus" ngFor let-item>
+              <button
+                class="gn-ml-5"
+                nz-button
+                nzType="primary"
+                (click)="handleChangeStatusOrder(item)"
+                [ngStyle]="{
+                  backgroundColor: listColorStatus[item],
+                  borderColor: listColorStatus[item],
+                  color: pickTextColorBasedOnBgColorAdvanced(listColorStatus[item], '#FFFFFF', '#000000')
+                }"
+              >
+                {{ 'routes.Admin.Order.' + listActionStatus[item] | translate}}
+              </button>
+            </ng-template>
+          </div>
+          <h3 *ngIf="data.paymentDetail?.paymentRequestNo" class="gn-mt-10">Yêu cầu thanh toán</h3>
+          <nz-descriptions *ngIf="data.paymentDetail?.paymentRequestNo" class="table_order" nzBordered nzSize="small" [nzColumn]="{ xxl: 3, xl: 3, lg: 3, md: 2, sm: 2, xs: 1 }" >
+            <nz-descriptions-item [nzTitle]="'Mã Yêu cầu'">{{ data.paymentDetail?.paymentRequestNo }}</nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'Trạng thái'">
+              <button class="gn-no-click" nz-button nzSize="small" nzType="primary" [ngStyle]="{
+                  backgroundColor: listColorStatus[data.paymentDetail.status],
+                  borderColor: listColorStatus[data.paymentDetail.status],
+                  color: pickTextColorBasedOnBgColorAdvanced(listColorStatus[data.paymentDetail.status], '#FFFFFF', '#000000')
+                }">
+                {{ 'routes.Admin.Order.' + data.paymentDetail.status | translate}}
+              </button>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'Ngày tạo'">{{ data.paymentDetail?.createdOnDate }}</nz-descriptions-item>
+          </nz-descriptions>
+        </nz-tab>
+        <nz-tab [nzTitle]="'Ảnh chụp hóa đơn'" *ngIf="data?.status !== 'WAIT_CONFIRM' && data?.type === 'SHPE'">
+          <h3 class="gn-mt-10">Ảnh chụp hóa đơn</h3>
+          <nz-upload
+            (nzChange)="handleUpload($event)"
+            [nzAction]="urlUpload"
+            nzListType="picture"
+            [(nzFileList)]="listUpload"
+            [nzPreview]="handlePreview"
+            [nzRemove]="handleRemove"
+            [nzShowButton]="user.level === 10"
+            [nzShowUploadList] = "{showRemoveIcon: user.level === 10, showDownloadIcon: true}"
+          >
+            <div>
+              <i class="las la-2x la-upload"></i>
+              <div class="gn-mt-10">{{this.infoUpload?.name}}</div>
+            </div>
+          </nz-upload>
+          <app-geneat-modal [keyboard]="true" [visible]="previewVisible" [contentModal]="modalContent" [notFooter]="true" (clickCancel)="previewVisible = false">
+            <ng-template #modalContent>
+              <img [src]="previewImage" [ngStyle]="{ width: '100%' }" />
+            </ng-template>
+          </app-geneat-modal>
+        </nz-tab>
+        <nz-tab [nzTitle]="'Sản phẩm trong đơn (' + totalQuantityProduct + ')'">
+          <div class="gn-mb-15"></div>
+          <app-geneat-datatable
+            [lightBox]="true"
+            [save]="false"
+            [showSearch]="false"
+            [columns]="columnsProduct"
+            [data]="data['invoiceItems']"
+          ></app-geneat-datatable>
+        </nz-tab>
+        <nz-tab [nzTitle]="(langPrefix +  '.thongTinTrangThai' | translate) + ' (' + shippingLog['thongTinTrangThai'].length + ')'" *ngIf="data && data.status !== 'WAIT_CONFIRM' && data.status !== 'DRAFT' && data.type !== 'WHSL' && shippingLog['thongTinTrangThai'] && shippingLog['thongTinTrangThai'].length > 0">
+          <div class="gn-mb-15"></div>
+          <app-geneat-datatable
+            [save]="false"
+            [showSearch]="false"
+            [columns]="columnsThongTinTrangThai"
+            [data]="shippingLog['thongTinTrangThai']"
+          ></app-geneat-datatable>
+        </nz-tab>
+        <nz-tab [nzTitle]="(langPrefix +  '.thongTinPhat' | translate) + ' (' + shippingLog['thongTinPhat'].length + ')'" *ngIf="data && data.status !== 'WAIT_CONFIRM' && data.status !== 'DRAFT' && data.type !== 'WHSL' && shippingLog['thongTinPhat'] && shippingLog['thongTinPhat'].length > 0">
+          <div class="gn-mb-15"></div>
+          <app-geneat-datatable
+            [save]="false"
+            [showSearch]="false"
+            [columns]="columnsThongTinPhat"
+            [data]="shippingLog['thongTinPhat']"
+          ></app-geneat-datatable>
+        </nz-tab>
+
+      </nz-tabset>
+
+
+    </nz-spin>
+  </ng-template>
+</app-geneat-modal>
+

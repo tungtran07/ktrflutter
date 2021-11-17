@@ -1,0 +1,186 @@
+<div class="text-left gn-mb-15">
+  <nz-space [nzSize]="25">
+    <button nz-button *nzSpaceItem [nzType]="status === '' && 'primary'" (click)="handleChangeStatus('')">Tất cả đơn hàng</button>
+
+    <ng-template ngFor let-item [ngForOf]="listStatus" let-index="index">
+      <ng-container *ngIf="item !== 'WHSL_COMPLETED' || (item === 'WHSL_COMPLETED' && user.level === 10)">
+        <nz-badge *nzSpaceItem [nzCount]="counts[item]" [nzOverflowCount]="999999999">
+        <button [ngStyle]="{
+          padding: '5px',
+          backgroundColor: status === item ? (item === 'WHSL_COMPLETED' ? '#FFA800' :listColorStatus[item]) : '',
+          borderColor: status === item ? (item === 'WHSL_COMPLETED' ? '#FFA800' :listColorStatus[item]) : '',
+          color: status === item ? myTable.pickTextColorBasedOnBgColorAdvanced((item === 'WHSL_COMPLETED' ? '#FFA800' :listColorStatus[item]), '#FFFFFF', '#000000') : ''
+          }" nz-button [nzType]="status === item && 'primary'" (click)="handleChangeStatus(item)">{{ 'routes.Admin.Order.' + item | translate }}</button>
+        </nz-badge>
+      </ng-container>
+    </ng-template>
+  </nz-space>
+</div>
+
+<div class="text-left gn-mb-15">
+  <nz-space [nzSize]="10">
+    <button nz-button *nzSpaceItem [nzType]="type === '' && 'primary'" (click)="handleChangeType('')">Tất cả đơn hàng</button>
+
+    <ng-template ngFor let-item [ngForOf]="listType" let-index="index">
+      <button *nzSpaceItem [ngStyle]="{ padding: '5px'}" nz-button [nzType]="type === item && 'primary'" (click)="handleChangeType(item)">{{ 'routes.Admin.Order.' + item | translate }}</button>
+    </ng-template>
+  </nz-space>
+</div>
+
+<app-geneat-datatable
+  #myTable
+  width="1300px"
+  [showCheckbox]="status === 'INPROCESS' && user.level > 8"
+  [rightHeader]="rightTable"
+  [columns]="listOfColumns"
+  [data]="listOfData"
+  [total]="totalItem"
+  [loading]="isLoading"
+  (ngChange)="onChange($event)"
+  [pageSizeOptions]="[30, 50, 70, 100]"
+>
+  <ng-template #rightTable>
+    <div class="gn-mr-10">
+      <button nz-button nzType="primary" (click)="handleAddNew()">
+        <i class="las la-plus la-lg gn-mr-5"></i>
+        {{ 'routes.Admin.Order.addNew' | translate }}
+      </button>
+      <button [disabled]="myTable.dataChecked.length === 0" class="gn-ml-5" *ngIf="status === 'INPROCESS' && user.level === 10" nz-button nzType="primary" (click)="handlePrint()">
+        <i class="las la-print la-lg gn-mr-5"></i>
+        {{ 'routes.Admin.Order.printSelected' | translate }} <sup>{{ myTable.dataChecked.length > 0 ? '(' + myTable.dataChecked.length + ')' : ''}}</sup>
+      </button>
+      <button [disabled]="myTable.dataChecked.length === 0" class="gn-ml-5" *ngIf="status === 'INPROCESS' && user.level === 10" nz-button nzType="primary" (click)="handleCountItem(myTable.dataChecked)">
+        <i class="las la-cubes la-lg gn-mr-5"></i>
+        {{ 'routes.Admin.Order.locationWithOrder' | translate }} <sup>{{ myTable.dataChecked.length > 0 ? '(' + myTable.dataChecked.length + ')' : ''}}</sup>
+      </button>
+    </div>
+    <div style="float:right" *ngIf="status === 'INPROCESS' && user.level === 10">
+      <nz-radio-group [(ngModel)]="filterPrint" nzButtonStyle="solid" (ngModelChange)="handleFilterPrint($event)">
+        <label nz-radio-button nzValue="{}">Tất cả đơn</label>
+        <label nz-radio-button nzValue='{"isPrinted":false}'>Đơn chưa in</label>
+        <label nz-radio-button nzValue='{"isPrinted":true}'>Đơn đã in</label>
+      </nz-radio-group>
+    </div>
+  </ng-template>
+</app-geneat-datatable>
+
+<app-modal-print-order [listOrder]="myTable.dataChecked" [isVisible]="isVisiblePrint" (cancelModal)="handleCancelPrint()"></app-modal-print-order>
+
+<ng-template #contentDropdownTemplate>
+  <nz-spin [nzSpinning]="isLoadingAction">
+    <ng-template [ngForOf]="allowStatus" ngFor let-item>
+      <button
+        nz-button
+        nzSize="small"
+        nzType="primary"
+        [ngStyle]="{
+          backgroundColor: listColorStatus[item],
+          borderColor: listColorStatus[item],
+          color: myTable.pickTextColorBasedOnBgColorAdvanced(listColorStatus[item], '#FFFFFF', '#000000')
+        }"
+        (click)="handleChangeStatusOrder(item)"
+      >
+        {{ 'routes.Admin.Order.' + listActionStatus[item] | translate}}
+      </button>
+    </ng-template>
+  </nz-spin>
+</ng-template>
+
+<app-geneat-modal
+  [visible]="isVisibleReason"
+  [title]="'Lý do hủy đơn'"
+  (clickOk)="handleOkCancelReason()"
+  (clickCancel)="handleCancelReasons()"
+  [contentModal]="contentModalReason"
+  [okDisabled]="!reason || (reason ==='0' && !reasonValue)"
+  [width]="600"
+  okText="Xác nhận hủy đơn"
+>
+  <ng-template #contentModalReason>
+    <div nz-row [nzGutter]="16">
+      <div nz-col class="gutter-row" [nzSpan]="reason === '0' ? 12 : 24">
+        <nz-select [(ngModel)]="reason" style="width: 100%" nzShowSearch>
+          <ng-template [ngForOf]="listReason" ngFor let-item>
+            <nz-option [nzValue]="item" [nzLabel]="item"></nz-option>
+          </ng-template>
+          <nz-option nzValue="0" nzLabel="Lý do khác"></nz-option>
+        </nz-select>
+      </div>
+      <div nz-col class="gutter-row" [nzSpan]="12" *ngIf="reason === '0'">
+        <input nz-input placeholder="Nhập lý do khác vào đây" [(ngModel)]="reasonValue" />
+      </div>
+    </div>
+  </ng-template>
+</app-geneat-modal>
+
+<app-geneat-modal
+  [visible]="isVisibleOutStock"
+  [title]="'Xác nhận hết hàng'"
+  (clickOk)="handleOkOutStock()"
+  (clickCancel)="handleCancelOutStock()"
+  [contentModal]="contentModalOutStock"
+  [width]="800"
+  okText="Xác nhận"
+  [extendFooterButton]="footerButtonOutStock"
+>
+  <ng-template #contentModalOutStock>
+    <app-geneat-datatable
+      [save]="false"
+      [lightBox]="true"
+      [showSearch]="false"
+      [columns]="columnsOutStock"
+      [data]="listOutStock"
+      [showPagination]="false"
+    ></app-geneat-datatable>
+  </ng-template>
+  <ng-template #footerButtonOutStock>
+    <button class="red" nz-button nzType="primary" (click)="handleSetAllOutStock(true)">Hết hàng tất cả</button>
+    <button class="green" nz-button nzType="primary" (click)="handleSetAllOutStock(false)">Còn hàng tất cả</button>
+  </ng-template>
+</app-geneat-modal>
+
+<app-geneat-modal
+  [visible]="isVisibleCount"
+  [title]="('routes.Admin.Order.locationWithOrder' | translate) + ' (' + listCountItem.length + ')'"
+  (clickOk)="handlePrintCountItem()"
+  (clickCancel)="handleCancelCountItem()"
+  [contentModal]="contentModalCount"
+  [width]="448"
+  [okDisabled]="listCountItem.length === 0"
+  [okText]="'In danh sách'"
+>
+  <ng-template #contentModalCount>
+    <div id="printCount" >
+      <div *ngFor="let item of listCountItem;">
+        <table>
+          <thead>
+          <tr>
+            <td colspan="2">
+              <strong>Kho:</strong> {{item.location}}
+            </td>
+            <td colspan="2">
+              <strong>Tổng số:</strong> {{item.totalQuantity}}
+            </td>
+          </tr>
+          <tr>
+            <th width="40" align="center">STT</th>
+            <th width="125">Kho</th>
+            <th>Sản phẩm</th>
+            <th>Size</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let subItem of item.items; let i = index">
+            <td align="center">{{i + 1}}</td>
+            <td>{{item.location}}</td>
+            <td>{{subItem.name}}</td>
+            <td>{{renderSize(subItem.sizes)}}</td>
+          </tr>
+          </tbody>
+        </table>
+        <hr>
+      </div>
+    </div>
+
+  </ng-template>
+</app-geneat-modal>

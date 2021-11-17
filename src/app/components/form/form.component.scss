@@ -1,0 +1,91 @@
+@import "src/app/app.variables";
+
+.ant-form {
+  &-horizontal {
+    .ant-form-item-label > label {
+      height: 38px;
+    }
+  }
+  &.form-small .ant-form-item {
+    margin-bottom: 10px;
+    .ant-input {
+      padding: 5px 8px;
+    }
+  }
+  .ant-input-group > .ant-input-number:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+  .ant-radio-button-wrapper.danger { color: $danger; }
+  .ant-radio-group-solid .ant-radio-button-wrapper-checked.danger:not(.ant-radio-button-wrapper-disabled) {
+    border-color: $danger;
+    background-color: $danger;
+    color: $white;
+  }
+  .ant-form-item-label {
+    > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
+      position: absolute;
+      right: -5px;
+      top: 6px;
+    }
+  }
+  .ant-form-vertical {
+    .ant-form-item-label > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
+      right: -13px;
+      top: 0;
+    }
+  }
+
+  .ant-checkbox{
+    & + span {
+      font-size: 14px;
+      vertical-align: top;
+    }
+  }
+  .ant-form-item {
+    margin-bottom: 14px;
+
+    &-label {
+      text-align: left;
+      > label {
+        font-size: 14px;
+      }
+    }
+    textarea.ant-input { max-height: 90px; }
+  }
+  .ant-input-prefix,
+  .ant-input-suffix {
+    background-color: $light;
+    padding: 0 10px;
+  }
+
+  .ant-input-affix-wrapper,
+  .ant-input,
+  .ant-picker,
+  .ant-picker-range,
+  .ant-input-number,
+  .ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+    border: 1px solid shade($white, 10);
+    background-color: $white;
+    color: #3F4254;
+    font-size: 14px;
+    height: auto;
+    width: 100%;
+
+    i { color: #7E8299; }
+  }
+  .ant-input-affix-wrapper,
+  .ant-input,
+  .ant-picker,
+  .ant-picker-range { padding: 8px 13px; }
+
+  .ant-select-single:not(.ant-select-customize-input) .ant-select-selector {
+    padding: 3px 11px;
+    .ant-select-selection-search-input { height: 36px; }
+  }
+  .ant-input-number {
+    padding: 3px;
+    width: 100%;
+  }
+}
+

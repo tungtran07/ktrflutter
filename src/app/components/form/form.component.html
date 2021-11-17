@@ -1,0 +1,179 @@
+<form
+  nz-form
+  [ngClass]="{'form-small': small}"
+  nzLayout="{{widthLabel > 0 ? 'horizontal' : 'vertical'}}"
+  [formGroup]="validateForm"
+  (ngSubmit)="submitForm()"
+  (keyup.enter)="submitForm()"
+>
+  <nz-spin [nzSpinning]="loading && isLoading">
+    <div nz-row [nzGutter]="12">
+    <ng-template ngFor let-$column [ngForOf]="$columns">
+        <ng-template ngFor let-$col [ngForOf]="$cols">
+          <div
+            nz-col
+            [nzXs]="24"
+            [nzSm]="$column.length === 1 ? 24 : 24 / col"
+          >
+            <div nz-row [nzGutter]="12">
+              <ng-template ngFor let-column [ngForOf]="$column" let-index="index">
+                <div
+                  class="col-form-item"
+                  nz-col
+                  [nzXs]="24"
+                  [nzSm]="column.formItem.col ? column.formItem.col : 24"
+                  *ngIf="index >= (($column.length / col) * $col) && index <  (($column.length / col) * ($col + 1))">
+                  <nz-form-item *ngIf="column.formItem.type !== 'title' && column.formItem.type !== 'line' && (column.formItem.show === undefined || !!column.formItem.show)">
+                    <nz-form-label
+                      *ngIf="!noLabel && (column.formItem.type !== 'checkbox' || (column.formItem.type === 'checkbox' && column.formItem.html && column.title))"
+                      [ngStyle]="widthLabel > 0 && {'width': widthLabel + 'px', whiteSpace: 'break-spaces'}"
+                      [nzRequired]="checkRequired(column)"
+                      [nzFor]="column.name"
+                    >{{(!!column.formItem.title ? column.formItem.title(validateForm.value) : column.title)  | translate}}</nz-form-label>
+                    <nz-form-control [nzErrorTip]="errorTpl">
+                      <ng-container [ngSwitch]="column.formItem.type">
+                        <nz-input-group *ngSwitchCase="'number'" [nzAddOnBefore]="column.formItem.addOnBefore" [nzAddOnAfter]="column.formItem.addOnAfter">
+                          <nz-input-number
+                            [formControlName]="column.name"
+                            [nzParser]="parserNumber"
+                          ></nz-input-number>
+                        </nz-input-group>
+                        <nz-input-group *ngSwitchCase="'mask'" [nzAddOnBefore]="column.formItem.addOnBefore" [nzAddOnAfter]="column.formItem.addOnAfter">
+                          <input
+                            [formControlName]="column.name"
+                            [tabindex]="column.formItem.readonly ? '-1' : ''"
+                            [readonly]="column.formItem.readonly"
+                            nz-input
+                            (ngModelChange)="onChangeValue(column, $event)"
+                            [mask]="!column.formItem.number ? column.formItem.mask : 'separator'"
+                            thousandSeparator=","
+                            [prefix]="column.formItem.maskPrefix ? column.formItem.maskPrefix : ''"
+                            [dropSpecialCharacters]="column.formItem.number"
+                            [placeholder]="!!column.formItem.placeholder ? column.formItem.placeholder : ''"
+                            (blur)="onChangeValue(column, $event?.target?.value, 'blur')"
+                          />
+                        </nz-input-group>
+                        <nz-input-group *ngSwitchCase="'password'" [nzAddOnBefore]="column.formItem.addOnBefore" [nzAddOnAfter]="column.formItem.addOnAfter">
+                          <input
+                            [formControlName]="column.name"
+                            nz-input type="password"
+                            (ngModelChange)="updateConfirmValidator(column.name)"
+                            [placeholder]="!!column.formItem.placeholder ? column.formItem.placeholder : ''"
+                          />
+                        </nz-input-group>
+                        <textarea
+                          *ngSwitchCase="'textarea'"
+                          [formControlName]="column.name"
+                          nz-input
+                          rows="4"
+                          [placeholder]="!!column.formItem.placeholder ? column.formItem.placeholder : ''"
+                        ></textarea>
+                        <nz-input-group *ngSwitchCase="'autocomplete'" [nzAddOnBefore]="column.formItem.addOnBefore" [nzAddOnAfter]="column.formItem.addOnAfter">
+                          <input
+                            [formControlName]="column.name"
+                            nz-input
+                            (ngModelChange)="onChangeValue(column, $event)"
+                            [placeholder]="!!column.formItem.placeholder ? column.formItem.placeholder : ''"
+                            [nzAutocomplete]="auto"
+                          />
+                          <nz-autocomplete nzBackfill #auto>
+                            <ng-template ngFor let-option [ngForOf]="column.formItem.listAutocomplete">
+                              <nz-auto-option [nzValue]="option.value">{{option.label}}</nz-auto-option>
+                            </ng-template>
+                          </nz-autocomplete>
+                        </nz-input-group>
+
+                        <nz-date-picker
+                          *ngSwitchCase="'date'"
+                          [nzFormat]="column.formItem.formatDate"
+                          [formControlName]="column.name"
+                        ></nz-date-picker>
+                        <nz-range-picker
+                          *ngSwitchCase="'date_range'"
+                          [nzFormat]="column.formItem.formatDate"
+                          [formControlName]="column.name"
+                        ></nz-range-picker>
+                        <label
+                          *ngSwitchCase="'checkbox'"
+                          [formControlName]="column.name"
+                          nz-checkbox
+                        >
+                          <span [innerHTML]="column.formItem.html ? column.formItem.html : (column.title | translate)"></span>
+                        </label>
+                        <nz-radio-group
+                          *ngSwitchCase="'radio'"
+                          nzButtonStyle="solid"
+                          [formControlName]="column.name"
+                          (ngModelChange)="onChangeValue(column, $event)"
+                        >
+                          <ng-template ngFor let-item [ngForOf]="column.formItem.list">
+                            <label [ngClass]="{danger: item.danger}" nz-radio-button *ngIf="item" nz-radio [nzValue]="item.value">{{item.label | translate}}</label>
+                          </ng-template>
+                        </nz-radio-group>
+                        <nz-select
+                          *ngSwitchCase="'select'"
+                          [formControlName]="column.name"
+                          nzShowSearch
+                          (ngModelChange)="onChangeValue(column, $event)"
+                          (nzOnSearch)="column.formItem.onSearch && column.formItem.onSearch($event)"
+                        >
+                          <nz-option [nzCustomContent]="!!column.formItem.customSelectContent"  *ngFor="let item of column.formItem.list" [nzValue]="item.value" nzLabel="{{item.label | translate}}">
+                            <div *ngIf="!!column.formItem.customSelectContent" [innerHTML]="column.formItem.customSelectContent(item)"></div>
+                          </nz-option>
+                        </nz-select>
+                        <nz-switch [nzDisabled]="column.formItem.readonly" *ngSwitchCase="'switch'" [formControlName]="column.name"></nz-switch>
+                        <nz-upload
+                          *ngSwitchCase="'upload'"
+                          [formControlName]="column.name"
+                          nzAction="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                          [nzHeaders]="{ authorization: 'authorization-text' }"
+                        >
+                          <button nz-button><i class="las la-upload"></i>Click to Upload</button>
+                        </nz-upload>
+                        <div *ngSwitchCase="'only-text'">{{column.formItem.render(values) | translate}}</div>
+                        <nz-input-group *ngSwitchDefault [nzAddOnBefore]="column.formItem.addOnBefore" [nzAddOnAfter]="column.formItem.addOnAfter">
+                          <input
+                            [tabindex]="column.formItem.readonly ? '-1' : ''"
+                            [formControlName]="column.name"
+                            [readonly]="column.formItem.readonly"
+                            nz-input
+                            (ngModelChange)="onChangeValue(column, $event)"
+                            (blur)="onChangeValue(column, $event?.target?.value, 'blur')"
+                            [placeholder]="!!column.formItem.placeholder ? column.formItem.placeholder : ''"
+                          />
+                        </nz-input-group>
+                      </ng-container>
+                      <ng-template #errorTpl let-control>
+                        <ul>
+                          <ng-template ngFor let-rule [ngForOf]="column.formItem.rules">
+                            <ng-container *ngIf="control.hasError(rule.type)">
+                              <li>
+                                {{ control.errors[rule.type].message ?  control.errors[rule.type].message : rule.message | translate:{value: rule.value} }}
+                              </li>
+                            </ng-container>
+                          </ng-template>
+                        </ul>
+                      </ng-template>
+
+                    </nz-form-control>
+                  </nz-form-item>
+                  <h4
+                    *ngIf="!!column.formItem && column.formItem.type === 'title'"
+                    nz-typography
+                  >
+                    {{column.title  | translate}}
+                  </h4>
+                  <nz-divider *ngIf="!!column.formItem && column.formItem.type === 'line'"></nz-divider>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+      </ng-template>
+    </ng-template>
+  </div>
+  </nz-spin>
+</form>
+<div *ngIf="!!textSubmit" class="gn-text-center" (click)="submitForm()">
+  <button nz-button nzType="primary" [nzLoading]="loading">{{textSubmit}}</button>
+</div>
+

@@ -1,0 +1,25 @@
+.ant-modal-wrap  {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &.no-center {
+    display: block;
+
+    .ant-modal {
+      top: 10px;
+      transition: top 0.4s ease;
+      padding-bottom: 10px;
+    }
+  }
+  .ant-modal {
+    top: 0;
+    padding-bottom: 0;
+
+    &-header, &-body { padding: 12px 24px; }
+    &-body > .ant-spin-nested-loading { min-height: 100px; }
+    &-close-x {
+      width: 46px;
+      height: 46px;
+    }
+  }
+}

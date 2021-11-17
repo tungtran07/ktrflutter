@@ -1,0 +1,84 @@
+<ng-container>
+  <i class="las trigger" [ngClass]="{'la-outdent': isCollapsed && isDesktop, 'la-indent': !isCollapsed && isDesktop, 'la-bars': !isDesktop}" (click)="toggle()"></i>
+  <h5 id="header_title"></h5>
+  <div class="user-section">
+    <nz-select class="change_language" ngModel="{{translate.getDefaultLang()}}" (ngModelChange)="changeLanguage($event)">
+      <nz-option nzValue="vi" nzLabel="Vietnam"></nz-option>
+      <nz-option nzValue="en" nzLabel="English"></nz-option>
+    </nz-select>
+    <section
+      class="header-action"
+      nz-popover
+      nzPopoverTrigger="click"
+      [nzPopoverContent]="contentTemplate"
+      nzPopoverPlacement="bottomRight"
+      nzPopoverOverlayClassName="cart_header"
+      (nzPopoverVisibleChange)="loadData($event)"
+    >
+      <nz-badge [nzCount]="cart.length">
+        <i class="las la-shopping-cart"></i>
+      </nz-badge>
+      <span class="ringing"></span>
+    </section>
+
+    <ng-template #contentTemplate>
+      <div class="title-bg">
+        <h2>Giỏ hàng </h2>
+      </div>
+      <div *ngIf="cart.length === 0" class="gn-pl-10">
+        Không có sản phẩm nào trong giỏ
+      </div>
+      <nz-list>
+        <nz-list-item *ngFor="let item of cart; let i = index">
+          <nz-list-item-meta>
+            <nz-list-item-meta-avatar [nzSrc]="item.imageUrl"></nz-list-item-meta-avatar>
+            <nz-list-item-meta-title>
+              {{item.name}} ({{item.size}})
+            </nz-list-item-meta-title>
+          </nz-list-item-meta>
+          <ul nz-list-item-actions>
+            <nz-list-item-action><button (click)="handleDeleteProduct(i)" nz-button nzSize="small" nz-tooltip nzTooltipTitle="Xóa"><i class="las la-trash-alt la-lg"></i></button></nz-list-item-action>
+          </ul>
+        </nz-list-item>
+      </nz-list>
+    </ng-template>
+    <section class="header-action" (click)="openProfile()">
+      <span class="txt-username"><strong>{{user['userModel']['name']}}</strong></span>
+      <nz-avatar [nzShape]="'square'" [nzSrc]="user['userModel']['avatarUrl']"></nz-avatar>
+    </section>
+    <nz-drawer [nzVisible]="visibleProfile" nzPlacement="right" nzTitle="{{user['userModel']['userName']}}" [nzWidth]="370" (nzOnClose)="closeProfile()">
+      <ng-template nzDrawerContent>
+        <nz-spin [nzSpinning]="loading">
+          <div nz-row nzJustify="start" nzAlign="middle">
+            <div nz-col nzFlex="0 1 100px">
+              <nz-avatar [nzSize]="100" [nzShape]="'square'" [nzSrc]="user['userModel']['avatarUrl']"></nz-avatar>
+            </div>
+            <div class="gn-pl-10 profile" nz-col nzFlex="1 1 200px">
+              <strong>{{user['userModel']['name']}}</strong><br>
+              <a><i class="las la-envelope la-lg"></i></a> {{user['userModel']['email']}}<br>
+              <a><i class="las la-phone la-lg"></i></a> {{user['userModel']['phoneNumber']}}<br>
+              <button nz-button nzType="primary" (click)="onLogout()">Sign Out</button>
+            </div>
+          </div>
+          <nz-divider></nz-divider>
+          <nz-descriptions class="table_order" nzBordered nzSize="small" [nzColumn]="1">
+            <nz-descriptions-item [nzTitle]="'Hạng thành viên' | translate">
+              <div *ngIf="user?.level === 1">CTV thường</div>
+              <div *ngIf="user?.level === 2">CTV ruột <i class="las la-user-shield la-lg"></i></div>
+              <div *ngIf="user?.level === 3">Shop <i class="las la-store la-lg"></i></div>
+              <div *ngIf="user?.level === 9">Nhân viên <i class="las la-user-astronaut la-lg"></i></div>
+              <div *ngIf="user?.level === 10">Quản trị viên <i class="las la-star la-lg"></i></div>
+            </nz-descriptions-item>
+            <nz-descriptions-item [nzTitle]="'Điểm tích lũy' | translate">{{user['userModel']['point']}}</nz-descriptions-item>
+          </nz-descriptions>
+          <nz-divider></nz-divider>
+        </nz-spin>
+      </ng-template>
+
+    </nz-drawer>
+  </div>
+
+  <app-modal-detail-order [id]="order?.id" [isVisible]="isVisibleOrder" (cancelModal)="handleCancelOrder()" (changeLoading)="handleChangeLoading($event)" (changeStatusOrder)="handleChangeStatusOrder($event)"></app-modal-detail-order>
+  <app-modal-edit-order [isVisible]="isVisibleEditOrder" [data]="order" (cancelModal)="handleCancelEditOrder()" (changeModal)="success($event)"></app-modal-edit-order>
+
+</ng-container>

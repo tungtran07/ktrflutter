@@ -1,0 +1,23 @@
+<nz-layout class="g-main">
+  <nz-sider class="-intro-x" [nzWidth]="240" nzCollapsible [(nzCollapsed)]="isCollapsed" [nzTrigger]="null" *ngIf="isDesktop; else drawerSidebar">
+    <app-side></app-side>
+  </nz-sider>
+  <ng-template #drawerSidebar>
+    <nz-drawer nzWrapClassName="drawer_slide_bar" [nzVisible]="isDrawer" nzPlacement="left" (nzOnClose)="closeSideBar()">
+      <ng-template nzDrawerContent>
+        <app-side></app-side>
+      </ng-template>
+    </nz-drawer>
+  </ng-template>
+  <nz-layout>
+    <nz-header class="intro-x">
+      <app-header></app-header>
+    </nz-header>
+    <nz-content id="main_content" class="intro-x">
+      <router-outlet></router-outlet>
+    </nz-content>
+    <nz-footer class="intro-x">
+      <app-footer></app-footer>
+    </nz-footer>
+  </nz-layout>
+</nz-layout>
